@@ -17,3 +17,18 @@ def listen(connection):
 			print msg
 	finally:
 		connection.close()
+
+alice = get_connection(config.server_ipaddress, alice_port)
+bob = get_connection(config.server_ipaddress, bob_port)
+carol = get_connection(config.server_ipaddress, carol_port)
+devon = get_connection(config.server_ipaddress, devon_port)
+elizabeth = get_connection(config.server_ipaddress, elizabeth_port)
+
+thread.start_new_thread(listen, (alice, ))
+thread.start_new_thread(listen, (bob, ))
+thread.start_new_thread(listen, (carol, ))
+thread.start_new_thread(listen, (devon, ))
+thread.start_new_thread(listen, (elizabeth, ))
+
+while true:
+	input("Enter Transaction:")
