@@ -31,4 +31,12 @@ thread.start_new_thread(listen, (devon, ))
 thread.start_new_thread(listen, (elizabeth, ))
 
 while true:
-	input("Enter Transaction:")
+	transaction = input("Enter Transaction: ")
+
+	try:
+		(sender, receiver, value) = transaction.split()
+	except ValueError:
+		print("invalid input format. must be Sender Receiver Money")
+	if sender and receiver and value:
+		# you left off here
+		# determine who is the sender and then send message to network process
