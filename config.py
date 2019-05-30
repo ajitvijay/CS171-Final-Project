@@ -4,3 +4,4 @@ bob_port = 4000
 carol_port = 5004
 devon_port = 4500
 elizabeth_port = 4700
+network_port = 5010
