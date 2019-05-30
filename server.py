@@ -1,7 +1,4 @@
-<<<<<<< HEAD
 
-=======
->>>>>>> e919842f9548b7df50e2e14591f224ef9b9cd151
 def balGreaterThanOrEqual(bal,ballotNum):
 	if bal[0] > ballotNum[0]
 		return True
