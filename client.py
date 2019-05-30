@@ -38,5 +38,13 @@ while true:
 	except ValueError:
 		print("invalid input format. must be Sender Receiver Money")
 	if sender and receiver and value:
-		# you left off here
-		# determine who is the sender and then send message to network process
+		if sender = 'A':
+			alice.send(transaction)
+		if sender = 'B':
+			bob.send(transaction)
+		if sender = 'C':
+			carol.send(transaction)
+		if sender = 'D':
+			devon.send(transaction)
+		if sender = 'E':
+			elizabeth.send(transaction)
