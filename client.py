@@ -1,7 +1,8 @@
 import random
-import socket
+from socket import *
 import threading
 import time
+import config
 import ast
 
 
@@ -14,15 +15,15 @@ def listen(connection):
 	try:
 		while True:
 			msg = connection.recv(1024)
-			print msg
+			print(msg)
 	finally:
 		connection.close()
 
-alice = get_connection(config.server_ipaddress, alice_port)
-bob = get_connection(config.server_ipaddress, bob_port)
-carol = get_connection(config.server_ipaddress, carol_port)
-devon = get_connection(config.server_ipaddress, devon_port)
-elizabeth = get_connection(config.server_ipaddress, elizabeth_port)
+alice = get_connection(config.server_ipaddress, config.alice_port)
+bob = get_connection(config.server_ipaddress, config.bob_port)
+carol = get_connection(config.server_ipaddress, config.carol_port)
+devon = get_connection(config.server_ipaddress, config.devon_port)
+elizabeth = get_connection(config.server_ipaddress, config.elizabeth_port)
 
 thread.start_new_thread(listen, (alice, ))
 thread.start_new_thread(listen, (bob, ))
@@ -38,13 +39,13 @@ while true:
 	except ValueError:
 		print("invalid input format. must be Sender Receiver Money")
 	if sender and receiver and value:
-		if sender = 'A':
+		if sender == 'A':
 			alice.send(transaction)
-		if sender = 'B':
+		if sender == 'B':
 			bob.send(transaction)
-		if sender = 'C':
+		if sender == 'C':
 			carol.send(transaction)
-		if sender = 'D':
+		if sender == 'D':
 			devon.send(transaction)
-		if sender = 'E':
+		if sender == 'E':
 			elizabeth.send(transaction)
