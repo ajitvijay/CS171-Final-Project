@@ -1,6 +1,4 @@
 
-
-
 def balGreaterThanOrEqual(bal,ballotNum):
 	pass
 
@@ -31,12 +29,10 @@ def sendAccMessages(messagesReceived,NWSock):
 		if message['value'] is not None:
 			if balGreaterThanOrEqual(message['bal'],b)
 				value = message['value']
-				b =  
+				b =
 	newMessage = {}
 	newMessage ['type'] = 'acc'
 	newMessage ['type'] = ''
-
-
 
 def receiveMessage(message,currentState,messagesReceived,NWSock):
 	if message['type'] =='prop_ack' and currentState['state'] == 'waiting for prop_ack':
