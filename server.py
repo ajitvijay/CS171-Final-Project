@@ -50,56 +50,23 @@ def sendAccMessages(messagesReceived,currentState,NWSock):
 	value = None
 	b = None
 	for message in messagesReceived:
-<<<<<<< HEAD
 		if message['value'] is not None:
 			if balGreaterThanOrEqual(message['bal'],b)
 				value = message['value']
 				b =
-=======
-		if message['value'] != 'N/A':
-			if balGreaterThanOrEqual(message['acceptBal'],b)
-				value = message['acceptVal']
-				b= message['acceptBal']
->>>>>>> e919842f9548b7df50e2e14591f224ef9b9cd151
 	newMessage = {}
 	newMessage ['type'] = 'acc'
 	newMessage ['bal'] = messagesReceived[0]['bal']
-	if value is not None:		
+	if value is not None:
 		newMessage['value'] = value
 	else:
-		newMessage['value'] = currentState['value'] 
+		newMessage['value'] = currentState['value']
 	newMessage['sender'] = messagesReceived[0]['destination']
 
 	messagesReceived = []
 	currentState['state'] = 'waiting for acc_ack'
 
-<<<<<<< HEAD
 def receiveMessage(message,currentState,messagesReceived,NWSock):
-=======
-	for server in [0,1,2,3,4]:
-		newMessage['destination'] = server
-		if newMessage['destination'] == newMessage['sender']:
-			receiveMessage(message,currentState,messagesReceived,NWSock)
-	    else:
-	    	NWSock.send(bytes(str(newMessage) + '%', encoding='utf8'))
-
-
-def sendDescisionMessages(messagesReceived,NWSock):
-	newMessage = {}
-	newMessage['type'] = 'decision'
-	newMessage['value'] = messagesReceived[0]['value']
-	newMessage['bal'] = messagesReceived[0]['bal']
-	newMessage['sender'] = messagesReceived[0]['destination']
-	for server in [0,1,2,3,4]:
-		newMessage['destination'] = server
-		if newMessage['destination'] == newMessage['sender']:
-			receiveMessage(message,currentState,messagesReceived,NWSock)
-	    else:
-	    	NWSock.send(bytes(str(newMessage) + '%', encoding='utf8'))
-
-
-def receiveMessage(message,currentState,messagesReceived,NWSock,blockChain):
->>>>>>> e919842f9548b7df50e2e14591f224ef9b9cd151
 	if message['type'] =='prop_ack' and currentState['state'] == 'waiting for prop_ack':
 		messagesReceived.append(message)
 		if len(messagesReceived) >= 3:
@@ -127,11 +94,11 @@ def receiveMessage(message,currentState,messagesReceived,NWSock,blockChain):
 						currentState['value'] = 'N/A'
 						currentState['acceptBal'] = 'N/A'
 						currentState['acceptVal'] = 'N/A'
-						
+
 						blockChain.append(message['value'])
 
 						currentState['BallotNum'] = (len(blockChain), currentState['BallotNum'][1],currentState['proc_num'])
-							
+
 
 def separateMessages(message):
     remainingMessage = message
@@ -145,7 +112,7 @@ def separateMessages(message):
     return messageStrings
 
 def readConfigFile(configFile):
-	with open(configFile, “r”) as f: 
+	with open(configFile, “r”) as f:
 		lines = f.readlines()
 		return str(lines[-1])
 
@@ -164,9 +131,9 @@ def run(proc_num,NWconfigFile):
 	currentState['proc_num']= proc_num
 
 	networkPort = readConfigFile(NWconfigFile)
-	try: 
+	try:
 	    nwSock.connect(('127.0.0.1', networkPort))
-	
+
 	while True:
         time.sleep(1)
 
@@ -187,7 +154,7 @@ def run(proc_num,NWconfigFile):
                     print("Received transaction request from client ")
                     messageDict = ast.literal_eval(str(messageString))
                     #include trans code here
-                    
+
         except socket.error as err:
             pass
 
