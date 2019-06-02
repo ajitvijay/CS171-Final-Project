@@ -9,7 +9,7 @@ def balGreaterThanOrEqual(bal,ballotNum):
 			if bal[0] == ballotNum[0] and bal[1]== ballotNum[1]:
 				return bal[2] >= ballotNum[2]
 
-def sendPropAck(message,currentState,NWSock)
+def sendPropAck(message,currentState,NWSock):
 	newMessage = {}
 	newMessage['type'] = 'prop_ack'
 	newMessage['bal'] = message['bal']
@@ -169,3 +169,15 @@ def run(proc_num,NWconfigFile):
 
         except socket.error as err:
             pass
+
+
+####### MAIN STARTS HERE
+####### ALL HELPER FUNCTIONS GO BEFORE
+serverSocket = socket(AF_INET, SOCK_STREAM)
+networkSocket = socket(AF_INET, SOCK_STREAM)
+
+if(argc < 2):
+	print("must indicate what server this is")
+
+serverName = argv[1]
+if serverName == 'A':
