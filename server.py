@@ -203,8 +203,10 @@ def transaction_message(networkSocket, client_conn):
 			# print(type(value[-1])) #type string
 
 			if(len(transactions) > 1):
-				get_nonce(transactions)
-				print(get_nonce(transactions))
+				(nonce_hash_value, transact_list, nonce_string) = get_hash(transactions)
+				print(nonce_hash_value)
+				print(transact_list)
+				print(nonce_string)
 	finally:
 		client_conn.close()
 
@@ -213,17 +215,21 @@ def get_random_string():
 	return random_str
 
 
-def get_nonce(transactions):
+def get_hash(transactions):
+	trans_list = []
+	trans_list.append(transactions[0])
+	trans_list.append(transactions[1])
 	temp = True
 	while(temp):
-		msg = transactions[0] + transactions[1] + get_random_string()
+		rdstr = get_random_string()
+		msg = transactions[0] + transactions[1] + rdstr
 		value = hashlib.sha256(msg.encode()).hexdigest()
 		checker = value[-1]
 		# print(value)
 		# print(checker)
 		if checker.isdigit() == True:
 			if int(checker) == 0 or int(checker) == 1:
-				return value
+				return value, trans_list, rdstr
 			else:
 				continue
 
