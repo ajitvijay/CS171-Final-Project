@@ -190,6 +190,7 @@ def transaction_message(networkSocket, client_conn):
 			global clientName
 			global serverName
 			global transactions
+			global blockChain
 			transact_msg = client_conn.recv(1024).decode()
 			(sender, receiver, amt) = transact_msg.split()
 			transactions.append(transact_msg)
@@ -207,6 +208,13 @@ def transaction_message(networkSocket, client_conn):
 				print(nonce_hash_value)
 				print(transact_list)
 				print(nonce_string)
+				if len(blockChain) == 0: #check to see if blockChain has any previous validated blocks
+					prevhash = "NULL"
+				else:
+					(prev_nonce_hash, prev_transact_list, prev_nonce_string) = blockChain[len(blockChain)-1]
+					hasher_str = prev_nonce_hash + prev_transact_list[0] + prev_transact_list[1] + prev_nonce_string + str(len(blockChain)-1)
+					prevhash = hashlib.sha256(hasher_str.encode()).hexdigest()
+
 	finally:
 		client_conn.close()
 
