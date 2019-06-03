@@ -5,6 +5,12 @@ import config
 import threading
 import _thread
 import ast
+import hashlib
+
+def rand_delay():
+    time_delay = random.uniform(1.0,4.0)
+    time.sleep(time_delay)
+    return time_delay
 
 def message_parser(connection, address):
     global aliceSocket
@@ -23,14 +29,19 @@ def message_parser(connection, address):
                 message_type = "transaction"
                 print(message)
                 if sender == 'A':
+                    rand_delay()
                     aliceSocket.send(message.encode())
                 if sender == 'B':
+                    rand_delay()
                     bobSocket.send(message.encode())
                 if sender == 'C':
+                    rand_delay()
                     carolSocket.send(message.encode())
                 if sender == 'D':
+                    rand_delay()
                     devonSocket.send(message.encode())
                 if sender == 'E':
+                    rand_delay()
                     elizabethSocket.send(message.encode())
             except ValueError:
                 print("not a transaction message")

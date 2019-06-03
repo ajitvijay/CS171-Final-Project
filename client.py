@@ -5,7 +5,7 @@ import _thread
 import time
 import config
 import ast
-
+import hashlib
 
 def get_connection(ip_address, port_server):
 	client_socket = socket(AF_INET, SOCK_STREAM)

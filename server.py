@@ -6,6 +6,7 @@ from socket import *
 import config
 import ast
 import sys
+import hashlib
 # def balGreaterThanOrEqual(bal,ballotNum):
 # 	if bal[0] > ballotNum[0]:
 # 		return True
