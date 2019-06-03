@@ -5,11 +5,6 @@ import config
 import threading
 import ast
 
-def get_connection(ip_address, port_server):
-	client_socket = socket(AF_INET, SOCK_STREAM)
-	client_socket.connect((ip_address,port_server))
-	return client_socket
-
 def message_parser(connection, address):
     global aliceSocket
     global bobSocket
@@ -35,11 +30,17 @@ networkSocket = socket(AF_INET, SOCK_STREAM)
 networkSocket.bind((config.server_ipaddress, config.network_port))
 networkSocket.listen(5)
 
-alice = get_connection(config.server_ipaddress, config.alice_port)
-bob = get_connection(config.server_ipaddress, config.bob_port)
-carol = get_connection(config.server_ipaddress, config.carol_port)
-devon = get_connection(config.server_ipaddress, config.devon_port)
-elizabeth = get_connection(config.server_ipaddress, config.elizabeth_port)
+aliceSocket = socket(AF_INET, SOCK_STREAM)
+bobSocket = socket(AF_INET, SOCK_STREAM)
+carolSocket = socket(AF_INET, SOCK_STREAM)
+devonSocket = socket(AF_INET, SOCK_STREAM)
+elizabeth = socket(AF_INET, SOCK_STREAM)
+
+aliceSocket.connect((config.server_ipaddress, config.alice_port))
+bobSocket.connect((config.server_ipaddress, config.bob_port))
+carolSocket.connect((config.server_ipaddress, config.carol_port))
+devonSocket.connect((config.server_ipaddress, config.devon_port))
+elizabethSocket.connect((config.server_ipaddress, config.elizabeth_port))
 
 while True:
     conn, addr = networkSocket.accept()

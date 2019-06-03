@@ -1,183 +1,228 @@
+import random
+import time
+import threading
+from socket import *
+import config
+import ast
+import sys
+# def balGreaterThanOrEqual(bal,ballotNum):
+# 	if bal[0] > ballotNum[0]:
+# 		return True
+# 	else:
+# 		if bal[0] == ballotNum[0] and bal[1] > ballotNum[1]:
+# 			return True
+# 		else:
+# 			if bal[0] == ballotNum[0] and bal[1]== ballotNum[1]:
+# 				return bal[2] >= ballotNum[2]
+#
+# def sendPropAck(message,currentState,NWSock):
+# 	newMessage = {}
+# 	newMessage['type'] = 'prop_ack'
+# 	newMessage['bal'] = message['bal']
+# 	newMessage['acceptBal'] = currentState['acceptBal']
+# 	newMessage['acceptVal'] = currentState['acceptVal']
+# 	newMessage['destination'] = message['sender']
+# 	newMessage['sender'] = message['destination']
+# 	NWSock.send(bytes(str(newMessage) + '%', encoding='utf8'))
+# 	return 0
+#
+#
+# def sendAccAck(message,NWSock):
+# 	newMessage = {}
+# 	newMessage['type'] = 'acc_ack'
+# 	newMessage['bal'] = message['bal']
+# 	newMessage['value'] = message['value']
+# 	newMessage['destination'] = message['sender']
+# 	newMessage['sender'] = message['destination']
+# 	NWSock.send(bytes(str(newMessage) + '%', encoding='utf8'))
+# 	return 0
+#
+# def sendPropMessages(currentState,NWSock,newBlock):
+# 	newMessage = {}
+# 	newMessage['type'] = 'prop'
+# 	newMessage['bal'] = (newBlock['depth'],currentState['BallotNum'][1]+1,currentState['proc_num'])
+# 	newMessage['sender'] = currentState['proc_num']
+# 	messagesReceived = []
+# 	currentState['state'] = 'waiting for prop_ack'
+# 	for server in [0,1,2,3,4]:
+# 		newMessage['destination'] = server
+# 		if newMessage['destination'] == newMessage['sender']:
+# 			receiveMessage(message,currentState,messagesReceived,NWSock)
+# 		else:
+# 			NWSock.send(bytes(str(newMessage) + '%', encoding='utf8'))
+# 	return 0
+#
+# def sendAccMessages(messagesReceived,currentState,NWSock):
+# 	value = None
+# 	b = None
+# 	for message in messagesReceived:
+# 		if message['value'] is not None:
+# 			if balGreaterThanOrEqual(message['bal'],b):
+# 				value = message['value']
+# 				# b =
+# 	newMessage = {}
+# 	newMessage ['type'] = 'acc'
+# 	newMessage ['bal'] = messagesReceived[0]['bal']
+# 	if value is not None:
+# 		newMessage['value'] = value
+# 	else:
+# 		newMessage['value'] = currentState['value']
+# 	newMessage['sender'] = messagesReceived[0]['destination']
+#
+# 	messagesReceived = []
+# 	currentState['state'] = 'waiting for acc_ack'
+# 	return 0
+#
+# def receiveMessage(message,currentState,messagesReceived,NWSock):
+# 	if message['type'] =='prop_ack' and currentState['state'] == 'waiting for prop_ack':
+# 		messagesReceived.append(message)
+# 		if len(messagesReceived) >= 3:
+# 			sendAccMessages(messagesReceived)
+# 	else:
+# 		if message['type'] == 'acc_ack' and currentState['state'] == 'waiting for acc_ack':
+# 			messagesReceived.append(message)
+# 			if len(messagesReceived) >= 3:
+# 				sendDecisionMessages(messagesReceived)
+# 		else:
+# 			if message['type'] == 'prop':
+# 				if balGreaterThanOrEqual(message['bal'],currentState['BallotNum']):
+# 					currentState['BallotNum'] = message['bal']
+# 					sendPropAck(message,currentState,NWSock)
+# 			else:
+# 				if message['type'] == 'acc':
+# 					if balGreaterThanOrEqual(message['bal'],currentState['BallotNum']):
+# 						currentState['acceptBal']=message['bal']
+# 						currentState['acceptVal'] = message['value']
+# 						sendAccAck(message,NWSock)
+# 				else:
+# 					if message['type'] == 'decision':
+# 						messagesReceived = []
+# 						currentState['state'] = 'N/A'
+# 						currentState['value'] = 'N/A'
+# 						currentState['acceptBal'] = 'N/A'
+# 						currentState['acceptVal'] = 'N/A'
+#
+# 						blockChain.append(message['value'])
+#
+# 						currentState['BallotNum'] = (len(blockChain), currentState['BallotNum'][1],currentState['proc_num'])
+#
+# 	return 0
+# def separateMessages(message):
+#     remainingMessage = message
+#     messageStrings = []
+#     while len(remainingMessage) > 3:
+#         messageStrings.append(remainingMessage[:remainingMessage.find('%')])
+#         if len(remainingMessage[remainingMessage.find('%'):]) > 3:
+#             remainingMessage = remainingMessage[remainingMessage.find('%') + 1:]
+#         else:
+#             remainingMessage = ''
+#     return messageStrings
+#
+# def readConfigFile(configFile):
+# 	with open(configFile, 'r') as f:
+# 		lines = f.readlines()
+# 		return str(lines[-1])
+#
+#
+# def run(proc_num,NWconfigFile):
+# 	blockChain = []
+#
+# 	messagesReceived = []
+# 	currentState = {}
+# 	currentState['state']= 'N/A'
+# 	currentState['acceptVal']= 'N/A'
+# 	currentState['acceptBal']= 'N/A'
+# 	#is default value for when a block is successfully mined:
+# 	currentState['value']= 'N/A'
+# 	currentState['BallotNum']= (0,0,proc_num)
+# 	currentState['proc_num']= proc_num
+#
+# 	networkPort = readConfigFile(NWconfigFile)
+# 	try:
+# 	    nwSock.connect(('127.0.0.1', networkPort))
+#
+# 	while True:
+#         time.sleep(1)
+#
+#         try:
+#             client, addr = clientSock.accept()
+#             print('Got connection with client at ', addr)
+#             client.setblocking(0)
+#
+#         except socket.error as err:
+#             pass
+#
+#         # manage sending a message when received one from client
+#         try:
+#             if client is not None:
+#                 messageString = client.recv(1024).decode('utf-8')
+#
+#                 if messageString != '':
+#                     print("Received transaction request from client ")
+#                     messageDict = ast.literal_eval(str(messageString))
+#                     #include trans code here
+#
+#         except socket.error as err:
+#             pass
+#
+#         # Manage receiving a message from the network
+#         try:
+#             if nwSock is not None:
+#                 messageString = nwSock.recv(1024).decode('utf-8')
+#
+#                 if messageString != '':
+#                     messageStrings = separateMessages(messageString)
+#
+#                     for message in messageStrings:
+#                         messageDict = ast.literal_eval(str(message))
+#                         receiveMessage(messageDict, currentState,messagesReceived, nwSock)
+#
+#         except socket.error as err:
+#             pass
+# 	return 0
 
-def balGreaterThanOrEqual(bal,ballotNum):
-	if bal[0] > ballotNum[0]
-		return True
-	else:
-		if bal[0] == ballotNum[0] and bal[1] > ballotNum[1]:
-			return True
-		else:
-			if bal[0] == ballotNum[0] and bal[1]== ballotNum[1]:
-				return bal[2] >= ballotNum[2]
-
-def sendPropAck(message,currentState,NWSock):
-	newMessage = {}
-	newMessage['type'] = 'prop_ack'
-	newMessage['bal'] = message['bal']
-	newMessage['acceptBal'] = currentState['acceptBal']
-	newMessage['acceptVal'] = currentState['acceptVal']
-	newMessage['destination'] = message['sender']
-	newMessage['sender'] = message['destination']
-    NWSock.send(bytes(str(newMessage) + '%', encoding='utf8'))
-
-
-def sendAccAck(message,NWSock):
-	newMessage = {}
-	newMessage['type'] = 'acc_ack'
-	newMessage['bal'] = message['bal']
-	newMessage['value'] = message['value']
-	newMessage['destination'] = message['sender']
-	newMessage['sender'] = message['destination']
-    NWSock.send(bytes(str(newMessage) + '%', encoding='utf8'))
-
-def sendPropMessages(currentState,NWSock,newBlock):
-	newMessage = {}
-	newMessage['type'] = 'prop'
-	newMessage['bal'] = (newBlock['depth'],currentState['BallotNum'][1]+1,currentState['proc_num'])
-	newMessage['sender'] = currentState['proc_num']
-	messagesReceived = []
-	currentState['state'] = 'waiting for prop_ack'
-	for server in [0,1,2,3,4]:
-		newMessage['destination'] = server
-		if newMessage['destination'] == newMessage['sender']:
-			receiveMessage(message,currentState,messagesReceived,NWSock)
-	    else:
-	    	NWSock.send(bytes(str(newMessage) + '%', encoding='utf8'))
-
-def sendAccMessages(messagesReceived,currentState,NWSock):
-	value = None
-	b = None
-	for message in messagesReceived:
-		if message['value'] is not None:
-			if balGreaterThanOrEqual(message['bal'],b)
-				value = message['value']
-				b =
-	newMessage = {}
-	newMessage ['type'] = 'acc'
-	newMessage ['bal'] = messagesReceived[0]['bal']
-	if value is not None:
-		newMessage['value'] = value
-	else:
-		newMessage['value'] = currentState['value']
-	newMessage['sender'] = messagesReceived[0]['destination']
-
-	messagesReceived = []
-	currentState['state'] = 'waiting for acc_ack'
-
-def receiveMessage(message,currentState,messagesReceived,NWSock):
-	if message['type'] =='prop_ack' and currentState['state'] == 'waiting for prop_ack':
-		messagesReceived.append(message)
-		if len(messagesReceived) >= 3:
-			sendAccMessages(messagesReceived)
-	else:
-		if message['type'] == 'acc_ack' and currentState['state'] == 'waiting for acc_ack':
-			messagesReceived.append(message)
-			if len(messagesReceived) >= 3:
-				sendDecisionMessages(messagesReceived)
-		else:
-			if message['type'] == 'prop':
-				if balGreaterThanOrEqual(message['bal'],currentState['BallotNum']):
-					currentState['BallotNum'] = message['bal']
-					sendPropAck(message,currentState,NWSock)
-			else:
-				if message['type'] == 'acc':
-					if balGreaterThanOrEqual(message['bal'],currentState['BallotNum']):
-						currentState['acceptBal']=message['bal']
-						currentState['acceptVal'] = message['value']
-						sendAccAck(message,NWSock)
-				else:
-					if message['type'] == 'decision':
-						messagesReceived = []
-						currentState['state'] = 'N/A'
-						currentState['value'] = 'N/A'
-						currentState['acceptBal'] = 'N/A'
-						currentState['acceptVal'] = 'N/A'
-
-						blockChain.append(message['value'])
-
-						currentState['BallotNum'] = (len(blockChain), currentState['BallotNum'][1],currentState['proc_num'])
-
-
-def separateMessages(message):
-    remainingMessage = message
-    messageStrings = []
-    while len(remainingMessage) > 3:
-        messageStrings.append(remainingMessage[:remainingMessage.find('%')])
-        if len(remainingMessage[remainingMessage.find('%'):]) > 3:
-            remainingMessage = remainingMessage[remainingMessage.find('%') + 1:]
-        else:
-            remainingMessage = ''
-    return messageStrings
-
-def readConfigFile(configFile):
-	with open(configFile, “r”) as f:
-		lines = f.readlines()
-		return str(lines[-1])
-
-
-def run(proc_num,NWconfigFile):
-	blockChain = []
-
-	messagesReceived = []
-	currentState = {}
-	currentState['state']= 'N/A'
-	currentState['acceptVal']= 'N/A'
-	currentState['acceptBal']= 'N/A'
-	#is default value for when a block is successfully mined:
-	currentState['value']= 'N/A'
-	currentState['BallotNum']= (0,0,proc_num)
-	currentState['proc_num']= proc_num
-
-	networkPort = readConfigFile(NWconfigFile)
+def transaction_message(networkSocket, client_conn):
 	try:
-	    nwSock.connect(('127.0.0.1', networkPort))
-
-	while True:
-        time.sleep(1)
-
-        try:
-            client, addr = clientSock.accept()
-            print('Got connection with client at ', addr)
-            client.setblocking(0)
-
-        except socket.error as err:
-            pass
-
-        # manage sending a message when received one from client
-        try:
-            if client is not None:
-                messageString = client.recv(1024).decode('utf-8')
-
-                if messageString != '':
-                    print("Received transaction request from client ")
-                    messageDict = ast.literal_eval(str(messageString))
-                    #include trans code here
-
-        except socket.error as err:
-            pass
-
-        # Manage receiving a message from the network
-        try:
-            if nwSock is not None:
-                messageString = nwSock.recv(1024).decode('utf-8')
-
-                if messageString != '':
-                    messageStrings = separateMessages(messageString)
-
-                    for message in messageStrings:
-                        messageDict = ast.literal_eval(str(message))
-                        receiveMessage(messageDict, currentState,messagesReceived, nwSock)
-
-        except socket.error as err:
-            pass
-
+		while True:
+			global clientName
+			global serverName
+			transact_msg = client_conn.recv(1024)
+			(sender, receiver, amt) = transact_msg.split()
+			print((sender,reciever,amt))
+	finally:
+		client_conn.close()
 
 ####### MAIN STARTS HERE
 ####### ALL HELPER FUNCTIONS GO BEFORE
 serverSocket = socket(AF_INET, SOCK_STREAM)
 networkSocket = socket(AF_INET, SOCK_STREAM)
 
-if(argc < 2):
+if(len(sys.argv) < 2):
 	print("must indicate what server this is")
+	exit()
 
-serverName = argv[1]
+serverName = sys.argv[1]
 if serverName == 'A':
+	serverSocket.bind((config.server_ipaddress, config.alice_port))
+	clientName = 'a'
+if serverName == 'B':
+	serverSocket.bind((config.server_ipaddress, config.bob_port))
+	clientName = 'b'
+if serverName == 'C':
+	serverSocket.bind((config.server_ipaddress, config.carol_port))
+	clientName = 'c'
+if serverName == 'D':
+	serverSocket.bind((config.server_ipaddress, config.devon_port))
+	clientName = 'd'
+if serverName == 'E':
+	serverSocket.bind((config.server_ipaddress, config.elizabeth_port))
+	clientName = 'e'
+
+serverSocket.listen(5)
+(nw_conn, nw_addr) = serverSocket.accept()
+print("Connection %s from nw server received", nw_conn)
+networkSocket.connect((config.server_ipaddress, config.network_port))
+(client_conn, client_addr) = serverSocket.accept()
+thread.start_new_thread(transaction_message, (networkSocket,client_conn))
+while True:
+	continue
