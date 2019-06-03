@@ -3,6 +3,7 @@ from socket import *
 import time
 import config
 import threading
+import _thread
 import ast
 
 def message_parser(connection, address):
@@ -13,14 +14,24 @@ def message_parser(connection, address):
     global elizabethSocket
     message_type = ""
     try:
-        connectionfrom = address + " has connected to network process"
+        connectionfrom = "NW has received connection from ", address
         print(connectionfrom)
         while True:
-            message = connection.recv(1024)
+            message = connection.recv(1024).decode()
             try:
                 (sender, receiver, value) = message.split()
                 message_type = "transaction"
                 print(message)
+                if sender == 'A':
+                    aliceSocket.send(message.encode())
+                if sender == 'B':
+                    bobSocket.send(message.encode())
+                if sender == 'C':
+                    carolSocket.send(message.encode())
+                if sender == 'D':
+                    devonSocket.send(message.encode())
+                if sender == 'E':
+                    elizabethSocket.send(message.encode())
             except ValueError:
                 print("not a transaction message")
     finally:
@@ -34,7 +45,7 @@ aliceSocket = socket(AF_INET, SOCK_STREAM)
 bobSocket = socket(AF_INET, SOCK_STREAM)
 carolSocket = socket(AF_INET, SOCK_STREAM)
 devonSocket = socket(AF_INET, SOCK_STREAM)
-elizabeth = socket(AF_INET, SOCK_STREAM)
+elizabethSocket = socket(AF_INET, SOCK_STREAM)
 
 aliceSocket.connect((config.server_ipaddress, config.alice_port))
 bobSocket.connect((config.server_ipaddress, config.bob_port))
@@ -44,4 +55,4 @@ elizabethSocket.connect((config.server_ipaddress, config.elizabeth_port))
 
 while True:
     conn, addr = networkSocket.accept()
-    thread.start_new_thread(message_parser, (conn, addr))
+    _thread.start_new_thread(message_parser, (conn, addr))

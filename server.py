@@ -1,6 +1,7 @@
 import random
 import time
 import threading
+import _thread
 from socket import *
 import config
 import ast
@@ -186,9 +187,9 @@ def transaction_message(networkSocket, client_conn):
 		while True:
 			global clientName
 			global serverName
-			transact_msg = client_conn.recv(1024)
+			transact_msg = client_conn.recv(1024).decode()
 			(sender, receiver, amt) = transact_msg.split()
-			print((sender,reciever,amt))
+			print((sender,receiver,amt))
 	finally:
 		client_conn.close()
 
@@ -223,6 +224,6 @@ serverSocket.listen(5)
 print("Connection %s from nw server received", nw_conn)
 networkSocket.connect((config.server_ipaddress, config.network_port))
 (client_conn, client_addr) = serverSocket.accept()
-thread.start_new_thread(transaction_message, (networkSocket,client_conn))
+_thread.start_new_thread(transaction_message, (networkSocket,client_conn))
 while True:
 	continue

@@ -1,6 +1,7 @@
 import random
 from socket import *
 import threading
+import _thread
 import time
 import config
 import ast
@@ -14,7 +15,7 @@ def get_connection(ip_address, port_server):
 def listen(connection):
 	try:
 		while True:
-			msg = connection.recv(1024)
+			msg = connection.recv(1024).decode()
 			print(msg)
 	finally:
 		connection.close()
@@ -25,13 +26,13 @@ carol = get_connection(config.server_ipaddress, config.carol_port)
 devon = get_connection(config.server_ipaddress, config.devon_port)
 elizabeth = get_connection(config.server_ipaddress, config.elizabeth_port)
 
-thread.start_new_thread(listen, (alice, ))
-thread.start_new_thread(listen, (bob, ))
-thread.start_new_thread(listen, (carol, ))
-thread.start_new_thread(listen, (devon, ))
-thread.start_new_thread(listen, (elizabeth, ))
+_thread.start_new_thread(listen, (alice, ))
+_thread.start_new_thread(listen, (bob, ))
+_thread.start_new_thread(listen, (carol, ))
+_thread.start_new_thread(listen, (devon, ))
+_thread.start_new_thread(listen, (elizabeth, ))
 
-while true:
+while(1):
 	transaction = input("Enter Transaction: ")
 
 	try:
@@ -40,12 +41,12 @@ while true:
 		print("invalid input format. must be Sender Receiver Money")
 	if sender and receiver and value:
 		if sender == 'A':
-			alice.send(transaction)
+			alice.send(transaction.encode())
 		if sender == 'B':
-			bob.send(transaction)
+			bob.send(transaction.encode())
 		if sender == 'C':
-			carol.send(transaction)
+			carol.send(transaction.encode())
 		if sender == 'D':
-			devon.send(transaction)
+			devon.send(transaction.encode())
 		if sender == 'E':
-			elizabeth.send(transaction)
+			elizabeth.send(transaction.encode())
