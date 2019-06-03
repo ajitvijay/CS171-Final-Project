@@ -1,5 +1,6 @@
 import random
 import time
+import string
 import threading
 import _thread
 from socket import *
@@ -194,26 +195,37 @@ def transaction_message(networkSocket, client_conn):
 			transactions.append(transact_msg)
 			print((sender,receiver,amt))
 			print(transactions)
-			value = hashlib.sha256(transactions[0].encode()).hexdigest()
-			print(value)
-			while(value[-1] != 0 or value[-1] != 1):
-				value = hashlib.sha256(transactions[0].encode()).hexdigest()
-				print(value)
-			print(value) # add random string here so that hash isnt the same everytime you run it
+			# msg = transactions[0] + get_random_string()
+			# value = hashlib.sha256(msg.encode()).hexdigest()
+			# print(value)
+			# print(type(value))
+			# print(value[-1])
+			# print(type(value[-1])) #type string
 
-			# if(len(transactions) > 1):
-			# 	hasher = hashlib.sha256()
-			# 	get_nonce(transactions)
+			if(len(transactions) > 1):
+				get_nonce(transactions)
+				print(get_nonce(transactions))
 	finally:
 		client_conn.close()
 
+def get_random_string():
+	random_str = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(10)]) #length of 10
+	return random_str
+
+
 def get_nonce(transactions):
-	for i in transactions:
-		hasher = hashlib.sha256(transactions[i].encode())
-		while(hasher.hexdigest()):
-			if hasher.hexdigest()[-1:] != 1 or hasher.hexdigest()[-1:] != 0:
-				hasher = hashlib.sha256(transactions[i].encode())
-		return hasher
+	temp = True
+	while(temp):
+		msg = transactions[0] + transactions[1] + get_random_string()
+		value = hashlib.sha256(msg.encode()).hexdigest()
+		checker = value[-1]
+		# print(value)
+		# print(checker)
+		if checker.isdigit() == True:
+			if int(checker) == 0 or int(checker) == 1:
+				return value
+			else:
+				continue
 
 
 ####### MAIN STARTS HERE
