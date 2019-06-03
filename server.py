@@ -188,16 +188,40 @@ def transaction_message(networkSocket, client_conn):
 		while True:
 			global clientName
 			global serverName
+			global transactions
 			transact_msg = client_conn.recv(1024).decode()
 			(sender, receiver, amt) = transact_msg.split()
+			transactions.append(transact_msg)
 			print((sender,receiver,amt))
+			print(transactions)
+			value = hashlib.sha256(transactions[0].encode()).hexdigest()
+			print(value)
+			while(value[-1] != 0 or value[-1] != 1):
+				value = hashlib.sha256(transactions[0].encode()).hexdigest()
+				print(value)
+			print(value) # add random string here so that hash isnt the same everytime you run it
+
+			# if(len(transactions) > 1):
+			# 	hasher = hashlib.sha256()
+			# 	get_nonce(transactions)
 	finally:
 		client_conn.close()
+
+def get_nonce(transactions):
+	for i in transactions:
+		hasher = hashlib.sha256(transactions[i].encode())
+		while(hasher.hexdigest()):
+			if hasher.hexdigest()[-1:] != 1 or hasher.hexdigest()[-1:] != 0:
+				hasher = hashlib.sha256(transactions[i].encode())
+		return hasher
+
 
 ####### MAIN STARTS HERE
 ####### ALL HELPER FUNCTIONS GO BEFORE
 serverSocket = socket(AF_INET, SOCK_STREAM)
 networkSocket = socket(AF_INET, SOCK_STREAM)
+transactions = []
+blockChain = []
 
 if(len(sys.argv) < 2):
 	print("must indicate what server this is")
