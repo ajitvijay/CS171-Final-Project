@@ -10,6 +10,7 @@ import hashlib
 def rand_delay():
     time_delay = random.uniform(1.0,4.0)
     time.sleep(time_delay)
+    print("random delay is %s seconds", time_delay)
     return time_delay
 
 def message_parser(connection, address):
