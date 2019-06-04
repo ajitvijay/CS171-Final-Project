@@ -8,15 +8,21 @@ import config
 import ast
 import sys
 import hashlib
-def balGreaterThanOrEqual(bal,ballotNum):
-	if bal[0] > ballotNum[0]:
+def balGreaterThanOrEqual(bal,BallotNum):
+	if bal[0] > BallotNum[0]:
 		return True
 	else:
-		if bal[0] == ballotNum[0] and bal[1] > ballotNum[1]:
+		if bal[0] == BallotNum[0] and bal[1] > BallotNum[1]:
 			return True
 		else:
-			if bal[0] == ballotNum[0] and bal[1]== ballotNum[1]:
-				return bal[2] >= ballotNum[2]
+			if bal[0] == BallotNum[0] and bal[1]== BallotNum[1]:
+				return bal[2] >= BallotNum[2]
+
+def saveData(currentState):
+	pass
+
+def readData(currentState):
+	pass
 
 def sendPropAck(message,currentState,NWSock):
 	newMessage = {}
@@ -57,7 +63,7 @@ def sendPropMessages(currentState,NWSock,newBlock):
 
 
 
-	def sendDecisionMessages(currentState,NWSock,transactions):
+def sendDecisionMessages(currentState,NWSock,transactions):
 	newMessage = {}
 	newMessage['type'] = 'decision'
 	newMessage['bal'] = currentState['messagesReceived'][0]['bal']
@@ -99,16 +105,24 @@ def sendAccMessages(currentState,NWSock,transactions):
 	    else:
 	    	NWSock.send(bytes(str(newMessage) , encoding='utf8'))
 
+def sendSync(currentState,NWSock):
+	#synchronize if new block is not the next block
+		newMessage = {}
+		newMessage['type'] = 'sync'
+		newMessage['blockChainLength'] = len(currentState['blockChain'])
+		newMessage['bal'] = currentState['BallotNum']
+		NWSock.send(bytes(str(newMessage) , encoding='utf8'))
+
 def receiveMessage(message,currentState,NWSock,transactions):
 	if message['type'] =='prop_ack' and currentState['state'] == 'waiting for prop_ack':
 		currentState['messagesReceived'].append(message)
 		if len(currentState['messagesReceived']) >= 3:
-			sendAccMessages(currentState['messagesReceived'],currentState,NWSock,transactions)
+			sendAccMessages(currentState,NWSock,transactions)
 	else:
 		if message['type'] == 'acc_ack' and currentState['state'] == 'waiting for acc_ack':
 			currentState['messagesReceived'].append(message)
 			if len(currentState['messagesReceived']) >= 3:
-				sendDecisionMessages(currentState['messagesReceived'],currentState,NWSock,transactions)
+				sendDecisionMessages(currentState,NWSock,transactions)
 		else:
 			if message['type'] == 'prop':
 				if balGreaterThanOrEqual(message['bal'],currentState['BallotNum']):
@@ -122,30 +136,43 @@ def receiveMessage(message,currentState,NWSock,transactions):
 						sendAccAck(message,NWSock)
 				else:
 					if message['type'] == 'decision':
-						#if decided value is from this proc_num
-						if currentState['proc_num'] == currentState['messagesReceived'][0]['bal'][2]:
-							transactions.remove(transactions[0])
-							transactions.remove(transactions[1])
+						# NEED ADD THING BELOW:
+						if len(currentState['blockChain']) + 1 != message['value'][CURRENT BLOCK DEPTH]:
+
+							print('Received decision out of order, updating blockchain now for all blocks past:' + str(newMessage['blockChainLength']))
+							time.sleep(7)
+							sendSync(currentState,NWSock)							
+						else:
+
+							#if decided value is from this proc_num
+							if currentState['proc_num'] == currentState['messagesReceived'][0]['bal'][2]:
+								transactions.remove(transactions[0])
+								transactions.remove(transactions[1])
 
 
-						currentState['state'] = 'N/A'
-						currentState['value'] = 'N/A'
-						currentState['acceptBal'] = 'N/A'
-						currentState['acceptVal'] = 'N/A'
-						currentState['mostRecentResponse'] = 'N/A'
+							currentState['state'] = 'N/A'
+							currentState['value'] = 'N/A'
+							currentState['acceptBal'] = 'N/A'
+							currentState['acceptVal'] = 'N/A'
+							currentState['mostRecentResponse'] = 'N/A'
 
-						currentState['messagesReceived'] = []
-						currentState['blockChain'].append(message['value'])
+							currentState['messagesReceived'] = []
+							currentState['blockChain'].append(message['value'])
 
 
-						currentState['BallotNum'] = (len(blockChain), currentState['BallotNum'][1],currentState['proc_num'])
+							currentState['BallotNum'] = (len(blockChain), currentState['BallotNum'][1],currentState['proc_num'])
 					else: 
 						if message['type'] == 'sync':
 							newMessage = {}
 							newMessage['type'] = 'sync-response'
-							newMessage['data'] = currentState['blockChain']
+							newMessage['data'] = currentState['blockChain'][message['blockChainLength']:]
+							newMessage['bal'] = currentState['BallotNum']
+							
 							NWSock.send(bytes(str(newMessage) , encoding='utf8'))
-
+						else:
+							if message['type'] == 'sync-response':
+								currentState['blockChain'] = currentState['blockChain'].extend(message['data'])
+								currentState['BallotNum'] = message['bal']
 	return 0
 
 
@@ -250,7 +277,7 @@ def transaction_message(networkSocket, client_conn,proc_num):
 			try:
 				receivedMessage = networkSocket.recv(1024).decode()
                 messageDict = ast.literal_eval(messageString)
-                receiveMessage(messageDict,currentState,currentState['messagesReceived'],networkSocket,transactions):
+                receiveMessage(messageDict,currentState,networkSocket,transactions):
 
 
 			except socket.error as err:
@@ -259,6 +286,9 @@ def transaction_message(networkSocket, client_conn,proc_num):
 				currentTime = datetime.datetime.now()
 				#get time passed since this response
 				if time_passed > threshold:
+					print('Not received any responses to request. Proposition failed.')
+					sendSync(currentState,NWSock)							
+
 
 
 
