@@ -89,10 +89,10 @@ def sendAccMessages(currentState,NWSock,transactions):
 	newMessage = {}
 	newMessage ['type'] = 'acc'
 	newMessage ['bal'] = currentState['messagesReceived'][0]['bal']
-	if value is not None:		
+	if value is not None:
 		newMessage['value'] = value
 	else:
-		newMessage['value'] = currentState['value'] 
+		newMessage['value'] = currentState['value']
 	newMessage['sender'] = currentState['messagesReceived'][0]['destination']
 
 	currentState['messagesReceived'] = []
@@ -141,7 +141,7 @@ def receiveMessage(message,currentState,NWSock,transactions):
 
 							print('Received decision out of order, updating blockchain now for all blocks past:' + str(newMessage['blockChainLength']))
 							time.sleep(7)
-							sendSync(currentState,NWSock)							
+							sendSync(currentState,NWSock)
 						else:
 
 							#if decided value is from this proc_num
@@ -161,13 +161,13 @@ def receiveMessage(message,currentState,NWSock,transactions):
 
 
 							currentState['BallotNum'] = (len(blockChain), currentState['BallotNum'][1],currentState['proc_num'])
-					else: 
+					else:
 						if message['type'] == 'sync':
 							newMessage = {}
 							newMessage['type'] = 'sync-response'
 							newMessage['data'] = currentState['blockChain'][message['blockChainLength']:]
 							newMessage['bal'] = currentState['BallotNum']
-							
+
 							NWSock.send(bytes(str(newMessage) , encoding='utf8'))
 						else:
 							if message['type'] == 'sync-response':
@@ -180,7 +180,7 @@ def receiveMessage(message,currentState,NWSock,transactions):
 # 	blockChain = []
 
 # 	currentState['messagesReceived'] = []
-	
+
 
 # 	networkPort = readConfigFile(NWconfigFile)
 # 	try:
@@ -259,17 +259,18 @@ def transaction_message(networkSocket, client_conn,proc_num):
 			# print(type(value[-1])) #type string
 
 			if(len(transactions) > 1):
-				(nonce_hash_value, transact_list, nonce_string) = get_hash(transactions)
+				(nonce_hash_value, transact_list, nonce_string, hashcount) = get_hash(transactions)
 				print(nonce_hash_value)
 				print(transact_list)
 				print(nonce_string)
+				print(hashcount)
 				if len(blockChain) == 0: #check to see if blockChain has any previous validated blocks
 					prevhash = "NULL"
 				else:
 					(prev_nonce_hash, prev_transact_list, prev_nonce_string) = blockChain[len(blockChain)-1]
 					hasher_str = prev_nonce_hash + prev_transact_list[0] + prev_transact_list[1] + prev_nonce_string + str(len(blockChain)-1)
 					prevhash = hashlib.sha256(hasher_str.encode()).hexdigest()
-					
+
 				# IF BLOCK IS VALID RUN THIS FUNCTION:
 				# sendPropMessages(currentState,networkSocket,newBlock,transactions)
 
@@ -287,7 +288,7 @@ def transaction_message(networkSocket, client_conn,proc_num):
 				#get time passed since this response
 				if time_passed > threshold:
 					print('Not received any responses to request. Proposition failed.')
-					sendSync(currentState,NWSock)							
+					sendSync(currentState,NWSock)
 
 
 
@@ -312,13 +313,15 @@ def get_hash(transactions):
 		msg = transactions[0] + transactions[1] + rdstr
 		value = hashlib.sha256(msg.encode()).hexdigest()
 		checker = value[-1]
+		counter+=1
 		# print(value)
 		# print(checker)
 		if checker.isdigit() == True:
 			if int(checker) == 0 or int(checker) == 1:
-				return value, trans_list, rdstr
+				return value, trans_list, rdstr, counter
 			else:
 				continue
+
 
 
 ####### MAIN STARTS HERE

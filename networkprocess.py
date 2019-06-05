@@ -51,7 +51,7 @@ def message_parser(connection, address):
 
 networkSocket = socket(AF_INET, SOCK_STREAM)
 networkSocket.bind((config.server_ipaddress, config.network_port))
-networkSocket.listen(5)
+networkSocket.listen(10)
 
 aliceSocket = socket(AF_INET, SOCK_STREAM)
 bobSocket = socket(AF_INET, SOCK_STREAM)
