@@ -228,6 +228,7 @@ def get_hash(transactions):
 	trans_list.append(transactions[0])
 	trans_list.append(transactions[1])
 	temp = True
+	counter = 0 # checks amount of times hash has to run
 	while(temp):
 		rdstr = get_random_string()
 		msg = transactions[0] + transactions[1] + rdstr
