@@ -46,24 +46,27 @@ def message_parser(connection, address):
                     elizabethSocket.send(message.encode())
             except ValueError:
                 print("not a transaction message")
+
     finally:
         connection.close()
 
 networkSocket = socket(AF_INET, SOCK_STREAM)
 networkSocket.bind((config.server_ipaddress, config.network_port))
-networkSocket.listen(10)
+networkSocket.listen(6)
 
 aliceSocket = socket(AF_INET, SOCK_STREAM)
 bobSocket = socket(AF_INET, SOCK_STREAM)
 carolSocket = socket(AF_INET, SOCK_STREAM)
 devonSocket = socket(AF_INET, SOCK_STREAM)
 elizabethSocket = socket(AF_INET, SOCK_STREAM)
+clientSocket = socket(AF_INET, SOCK_STREAM)
 
-aliceSocket.connect((config.server_ipaddress, config.alice_port))
-bobSocket.connect((config.server_ipaddress, config.bob_port))
-carolSocket.connect((config.server_ipaddress, config.carol_port))
-devonSocket.connect((config.server_ipaddress, config.devon_port))
-elizabethSocket.connect((config.server_ipaddress, config.elizabeth_port))
+aliceSocket.bind((config.server_ipaddress, config.alice_port))
+bobSocket.bind((config.server_ipaddress, config.bob_port))
+carolSocket.bind((config.server_ipaddress, config.carol_port))
+devonSocket.bind((config.server_ipaddress, config.devon_port))
+elizabethSocket.bind((config.server_ipaddress, config.elizabeth_port))
+clientSocket.bind((config.server_ipaddress, config.client_port))
 
 while True:
     conn, addr = networkSocket.accept()

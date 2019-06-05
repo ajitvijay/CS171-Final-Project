@@ -5,3 +5,4 @@ carol_port = 5003
 devon_port = 5004
 elizabeth_port = 5005
 network_port = 5010
+client_port = 5006
