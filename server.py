@@ -250,7 +250,7 @@ def receiveMessage(message,currentState,NWSock):
 						sendAccAck(message,NWSock)
 				else:
 					if message['type'] == 'decision':
-						
+						receiveDecision(currentState,message,NWSock):
 					else: 
 						if message['type'] == 'sync':
 							sendSyncResponse(currentState,message,NWSock)
