@@ -442,10 +442,13 @@ if serverName == 'E':
 #serverSocket.connect((config.server_ipaddress, config.network_port))
 #(client_conn, client_addr) = serverSocket.accept()
 #_thread.start_new_thread(transaction_message, (networkSocket,client_conn,0))
+
 while True:
 	try:
+		print("trying to get msg")
 		message = serverSocket.recv(1024).decode()
 		print(message)
+		break
 	except:
 		pass
 	continue

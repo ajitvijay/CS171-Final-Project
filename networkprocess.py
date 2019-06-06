@@ -13,29 +13,37 @@ def rand_delay():
     print("random delay is %f seconds!", time_delay)
     return time_delay
 
-def message_parser(connection, address):
+def message_parser(connection, address, connection_list):
     global aliceSocket
     global bobSocket
     global carolSocket
     global devonSocket
     global elizabethSocket
+    global clientSocket
     message_type = ""
+    alice_conn = connection_list[0]
+    bob_conn = connection_list[1]
+    carol_conn = connection_list[2]
+    devon_conn = connection_list[3]
+    elizabeth_conn = connection_list[4]
+    client_conn = connection_list[5]
     if connection == address:
         return 0
     else:
         try:
             connectionfrom = "NW has received connection from ", address
-            print(connectionfrom)
             while True:
                 try:
                     message = connection.recv(1024).decode()
                     print(message)
                     (sender, receiver, value) = message.split()
                     message_type = "transaction"
+                    print(connection_list)
                     if sender == 'A':
-                        rand_delay()
-                        aliceSocket.send(message.encode())
-                        print("message has been sent to server")
+                        if alice_conn != 0:
+                            rand_delay()
+                            alice_conn.send(message.encode())
+                            print("message has been sent to server")
                     if sender == 'B':
                         rand_delay()
                         bobSocket.send(message.encode())
@@ -103,9 +111,18 @@ while True:
     devon_conn, devon_addr = connection_attempt(devonSocket)
     elizabeth_conn, elizabeth_addr = connection_attempt(elizabethSocket)
     client_conn, client_addr = connection_attempt(clientSocket)
-    _thread.start_new_thread(message_parser, (alice_conn, alice_addr))
-    _thread.start_new_thread(message_parser, (bob_conn, bob_addr))
-    _thread.start_new_thread(message_parser, (carol_conn, carol_addr))
-    _thread.start_new_thread(message_parser, (devon_conn, devon_addr))
-    _thread.start_new_thread(message_parser, (elizabeth_conn, elizabeth_addr))
-    _thread.start_new_thread(message_parser, (client_conn, client_addr))
+    # list of client connections isnt getting the right values because it doesn't get initialized until after servers all connect
+    connections = []
+    connections.append(alice_conn)
+    connections.append(bob_conn)
+    connections.append(carol_conn)
+    connections.append(devon_conn)
+    connections.append(elizabeth_conn)
+    connections.append(client_conn)
+    print(connections)
+    _thread.start_new_thread(message_parser, (alice_conn, alice_addr, connections))
+    _thread.start_new_thread(message_parser, (bob_conn, bob_addr, connections))
+    _thread.start_new_thread(message_parser, (carol_conn, carol_addr, connections))
+    _thread.start_new_thread(message_parser, (devon_conn, devon_addr, connections))
+    _thread.start_new_thread(message_parser, (elizabeth_conn, elizabeth_addr, connections))
+    _thread.start_new_thread(message_parser, (client_conn, client_addr, connections))
