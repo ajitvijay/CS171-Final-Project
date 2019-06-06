@@ -331,7 +331,14 @@ def isValidBlock(block):
 	transactions = block[1]
 	# print(depth, prevhash, nonce)
 	# print(transactions)
-
+	trans1 = str(transactions[0][0]) + " " + str(transactions[0][1] + " " + str(transactions[0][2]))
+	trans2 = str(transactions[1][0]) + " " + str(transactions[1][1]) + " " + str(transactions[1][2])
+	string_to_hash = trans1 + trans2 + nonce
+	hash_value = hashlib.sha256(string_to_hash.encode()).hexdigest()
+	if hash_value[-1] == 0 or hash_value[-1] == 1:
+		return True
+	else:
+		return False
 
 # TODO for ajit: put in the correct way to access depth number in the block
 # Everything in slashes below needs to be replaced with the right thing based on how you organize the data structures
@@ -383,20 +390,12 @@ def createBlock(currentState):
 	# print(nonce)
 	depth_newblock = len(blockChain) + 1
 	# print(depth_newblock)
-	trans1 = str(transactions[0][0]) + " " + str(transactions[0][1] + " " + str(transactions[0][2]))
-	trans2 = str(transactions[1][0]) + " " + str(transactions[1][1]) + " " + str(transactions[1][2])
-	# print(trans1)
-	# print(trans2)
-	string_to_hash = trans1 + trans2 + nonce
-	# print(string_to_hash)
-	hash_value = hashlib.sha256(string_to_hash.encode()).hexdigest()
-	print(hash_value)
 	if depth_newblock == 1:
 		prev_hash = "NULL"
 
 	else:
-		prev_transaction_1 = blockChain[len(blockChain)-1][1][0]
-		prev_transaction_2 = blockChain[len(blockChain)-1][1][1]
+		prev_transaction_1 = str(blockChain[len(blockChain)-1][1][0][0]) + " " + str(blockChain[len(blockChain)-1][1][0][1]]) + " " + str(blockChain[len(blockChain)-1][1][0][2])
+		prev_transaction_2 = str(blockChain[len(blockChain)-1][1][1][0]) + " " + str(blockChain[len(blockChain)-1][1][1][1])) + " " + str(blockChain[len(blockChain)-1][1][1][2])
 		prev_depth = blockChain[len(blockChain)-1][0][0]
 		hash_prev = blockChain[len(blockChain)-1][0][1]
 		prev_nonce = blockChain[len(blockChain)-1][0][2]
@@ -423,14 +422,6 @@ def connectToNetwork(proc_num):
 	NWSock.send(bytes(str(proc_num), encoding='utf8'))
 	return NWSock
 
-def validHash(transaction_list, nonce, string_to_hash, hash_value):
-	if(hash_value[-1] != 0 or hash_value[-1] != 1):
-		nonce = get_random_string()
-		msg = transaction_list[0] + transaction_list[1] + nonce
-		hash = hashlib.sha256(msg.encode()).hexdigest()
-		return False, hash
-	elif(hash_value[-1] == 0 or hash_value[-1] == 1):
-		return True, hash_value
 
 def run(proc_num):
 
