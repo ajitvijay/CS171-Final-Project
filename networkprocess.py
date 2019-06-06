@@ -10,7 +10,7 @@ import hashlib
 def rand_delay():
     time_delay = random.uniform(1.0,4.0)
     time.sleep(time_delay)
-    print("random delay is %s seconds", time_delay)
+    print("random delay is %f seconds!", time_delay)
     return time_delay
 
 def message_parser(connection, address):
@@ -20,42 +20,49 @@ def message_parser(connection, address):
     global devonSocket
     global elizabethSocket
     message_type = ""
-    try:
-        connectionfrom = "NW has received connection from ", address
-        print(connectionfrom)
-        # while True:
-        #     message = connection.recv(1024).decode()
-        #     try:
-        #         (sender, receiver, value) = message.split()
-        #         message_type = "transaction"
-        #         print(message)
-        #         if sender == 'A':
-        #             rand_delay()
-        #             aliceSocket.send(message.encode())
-        #         if sender == 'B':
-        #             rand_delay()
-        #             bobSocket.send(message.encode())
-        #         if sender == 'C':
-        #             rand_delay()
-        #             carolSocket.send(message.encode())
-        #         if sender == 'D':
-        #             rand_delay()
-        #             devonSocket.send(message.encode())
-        #         if sender == 'E':
-        #             rand_delay()
-        #             elizabethSocket.send(message.encode())
-        #     except ValueError:
-        #         print("not a transaction message")
+    if connection == address:
+        return 0
+    else:
+        try:
+            connectionfrom = "NW has received connection from ", address
+            print(connectionfrom)
+            while True:
+                try:
+                    message = connection.recv(1024).decode()
+                    print(message)
+                    (sender, receiver, value) = message.split()
+                    message_type = "transaction"
+                    if sender == 'A':
+                        rand_delay()
+                        aliceSocket.send(message.encode())
+                        print("message has been sent to server")
+                    if sender == 'B':
+                        rand_delay()
+                        bobSocket.send(message.encode())
+                    if sender == 'C':
+                        rand_delay()
+                        carolSocket.send(message.encode())
+                    if sender == 'D':
+                        rand_delay()
+                        devonSocket.send(message.encode())
+                    if sender == 'E':
+                        rand_delay()
+                        elizabethSocket.send(message.encode())
+                except ValueError:
+                    print("not a transaction message")
+                except:
+                    pass
 
-    finally:
-        connection.close()
+        finally:
+            connection.close()
 
 def connection_attempt(sock):
+    sock.setblocking(0)
     try:
         conn, addr = sock.accept()
         return conn, addr
     except:
-        print("connection failed")
+        return 0, 0
 
 
 networkSocket = socket(AF_INET, SOCK_STREAM)

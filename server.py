@@ -443,4 +443,9 @@ if serverName == 'E':
 #(client_conn, client_addr) = serverSocket.accept()
 #_thread.start_new_thread(transaction_message, (networkSocket,client_conn,0))
 while True:
+	try:
+		message = serverSocket.recv(1024).decode()
+		print(message)
+	except:
+		pass
 	continue
