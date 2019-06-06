@@ -420,7 +420,9 @@ def connectToNetwork(proc_num):
 			break
 		except:
 			pass
+
 	NWSock.send(bytes(str(proc_num), encoding='utf8'))
+	NWSock.setblocking(0)
 	return NWSock
 
 def validHash(transaction_list, nonce, string_to_hash, hash_value):
@@ -432,6 +434,21 @@ def validHash(transaction_list, nonce, string_to_hash, hash_value):
 	elif(hash_value[-1] == 0 or hash_value[-1] == 1):
 		return True, hash_value
 
+
+
+def blockEquals(block1,block2):
+	if block1 =='' or block2 == '':
+		return False
+
+	if block1[0][0] == block2[0][0] and block1[0][1] == block2[0][1]: 
+		for transaction1,transaction2 in zip(block1[1],block2[1]):
+			if transaction1[0] != transaction2[0] or transaction1[1] != transaction2[1] or transaction1[2] != transaction2[2]:
+				return False
+	else:
+		return False
+
+	return True
+
 def run(proc_num):
 
 	currentState = initiateCurrentState(proc_num = proc_num)
@@ -441,65 +458,57 @@ def run(proc_num):
 	NWSock = connectToNetwork(currentState['proc_num'])
 	print('NW Connected')
 
-	try:
-		while True:
-			messageString = ''
-			try:
-				messageString = NWSock.recv(1024).decode('utf-8')
+	while True:
+		print('Loop transactions is: ' + str(currentState['transactions']))
+		messageString = ''
+		try:
+			messageString = NWSock.recv(1024).decode('utf-8')
 
-			except:
+		except:
+			pass
+
+		if messageString != '':
+
+			messageDict = ast.literal_eval(messageString)
+			print('Received message' + str(messageDict))
+			receiveMessage(messageDict,currentState,NWSock)
+			print(currentState)
+
+
+		# if currentState['mostRecentResponse'] != "N/A":
+		# 	currentTime = datetime.datetime.now()
+		# 	#get time passed since this response
+		# 	if (currentTime - currentState['mostRecentResponse']).seconds > timeOutDuration:
+		# 		print('Not received any responses to request. Proposition failed. Attempting to update blockChain')
+		# 		sendSync(currentState,NWSock)
+		# 		lastValidBlock = ''
+
+
+		if(len(currentState['transactions']) > 1):
+			#creates block based on current state.
+			block = createBlock(currentState)
+			print(block)
+			print(getDepthNumFromBlock(block))
+			checkIfTransactionsAreValid(currentState,NWSock)
+			if blockEquals(block,lastValidBlock):
+				#this means that we have already calculated the right nonce, and because we create block from current state, we know that the block is valid for being the next value
+				# so a block hasnt been proposed yet and this block is able to be the next one if paxos is down.
 				pass
+			else:
+				if isValidBlock(block):
+					print("Is Valid")
+					sendPropMessages(currentState,NWSock,block)
+					lastValidBlock = block
+		# receive message and then process if received
+		
+		if currentState['mostRecentResponse'] != "N/A":
+			currentTime = datetime.datetime.now()
+			#get time passed since this response
+			if (currentTime - currentState['mostRecentResponse']).seconds > timeOutDuration:
+				print('Not received any responses to request. Proposition failed. Attempting to update blockChain')
+				sendSync(currentState,NWSock)
+				lastValidBlock = ''
 
-			if messageString != '':
-
-				messageDict = ast.literal_eval(messageString)
-				print('Received message' + str(messageDict))
-				receiveMessage(messageDict,currentState,NWSock)
-				print(currentState)
-
-
-			# if currentState['mostRecentResponse'] != "N/A":
-			# 	currentTime = datetime.datetime.now()
-			# 	#get time passed since this response
-			# 	if (currentTime - currentState['mostRecentResponse']).seconds > timeOutDuration:
-			# 		print('Not received any responses to request. Proposition failed. Attempting to update blockChain')
-			# 		sendSync(currentState,NWSock)
-			# 		lastValidBlock = ''
-
-
-			if(len(currentState['transactions']) > 1):
-				#creates block based on current state.
-				block = createBlock(currentState)
-				print(block)
-				print(getDepthNumFromBlock(block))
-				isValidBlock(block)
-				#checkIfTransactionsAreValid(currentState,NWSock)
-				#print(checkIfTransactionsAreValid(currentState,NWSock))
-			# 	if block == lastValidBlock:
-			# 		#this means that we have already calculated the right nonce, and because we create block from current state, we know that the block is valid for being the next value
-			# 		# so a block hasnt been proposed yet and this block is able to be the next one if paxos is down.
-			# 		pass
-			# 	else:
-			# 		if isValidBlock(block):
-			# 			sendPropMessages(currentState,NWSock,block)
-			# 			lastValidBlock = block
-			# # receive message and then process if received
-
-
-			# except socket.error as err:
-			# 	pass
-			#
-			# #
-			# if currentState['mostRecentResponse'] != "N/A":
-			# 	currentTime = datetime.datetime.now()
-			# 	#get time passed since this response
-			# 	if (currentTime - currentState['mostRecentResponse']).seconds > timeOutDuration:
-			# 		print('Not received any responses to request. Proposition failed. Attempting to update blockChain')
-			# 		sendSync(currentState,NWSock)
-			# 		lastValidBlock = ''
-
-	except:
-		pass
 ### MAIN STARTS HERE
 
 run(proc_num = int(sys.argv[1]))
