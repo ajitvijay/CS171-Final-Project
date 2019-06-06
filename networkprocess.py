@@ -68,6 +68,13 @@ devonSocket.bind((config.server_ipaddress, config.devon_port))
 elizabethSocket.bind((config.server_ipaddress, config.elizabeth_port))
 clientSocket.bind((config.server_ipaddress, config.client_port))
 
+aliceSocket.listen(6)
+bobSocket.listen(6)
+carolSocket.listen(6)
+devonSocket.listen(6)
+elizabethSocket.listen(6)
+clientSocket.listen(6)
+
 while True:
     nw_conn, nw_addr = networkSocket.accept()
     alice_conn, alice_addr = aliceSocket.accept()

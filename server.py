@@ -439,7 +439,7 @@ if serverName == 'E':
 # serverSocket.listen(5)
 # (nw_conn, nw_addr) = serverSocket.accept()
 # print("Connection %s from nw server received", nw_conn)
-serverSocket.connect((config.server_ipaddress, config.network_port))
+#serverSocket.connect((config.server_ipaddress, config.network_port))
 #(client_conn, client_addr) = serverSocket.accept()
 #_thread.start_new_thread(transaction_message, (networkSocket,client_conn,0))
 while True:

@@ -43,3 +43,4 @@ while(1):
 		print("invalid input format. must be Sender Receiver Money")
 	if sender and receiver and value:
 		client.send(transaction.encode())
+		print("client sent transaction")
