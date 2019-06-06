@@ -39,7 +39,7 @@ def bindSocketAndSave():
 
 
 def startNetwork():
-    
+
     serverListener = bindSocketAndSave()
 
     serverSockets = {}
@@ -54,10 +54,10 @@ def startNetwork():
             print('Started connection with server: ' + procID)
 
             sock.setblocking(0)
-            serverSockets[procID] = sock 
+            serverSockets[procID] = sock
         except socket.error as err:
             pass
-            
+
 # Send messages with delay
         for socketVar in serverSockets.values():
             try:
@@ -67,7 +67,8 @@ def startNetwork():
                     print('Received message: ' + messageString)
 
                     messageDict = ast.literal_eval(messageString)
-
+                    #print(messageDict['destination'])
+                    #print(type(messageDict['destination']))
                     sendThread = threading.Thread(target=sendMessageWithDelay, args=(messageString, serverSockets[str(messageDict['destination'])],messageDict['destination']) )
                     sendThread.start()
 

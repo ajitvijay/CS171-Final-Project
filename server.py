@@ -304,6 +304,7 @@ def receiveMessage(message,currentState,NWSock):
 												sendBlockChain(currentState,NWSock)
 	return 0
 
+#added blockChain field for initialization
 def initiateCurrentState(proc_num = -25,file=None):
 	if file is None:
 		currentState = {}
@@ -317,6 +318,7 @@ def initiateCurrentState(proc_num = -25,file=None):
 		currentState['mostRecentResponse'] = 'N/A'
 		currentState['messagesReceived'] = []
 		currentState['transactions'] = []
+		currentState['blockChain'] = []
 	return currentState
 
 def get_random_string():
@@ -326,12 +328,12 @@ def get_random_string():
 
 def isValidBlock(block):
 	value = hashlib.sha256(block.encode()).hexdigest()
-		checker = value[-1]
-		# print(value)
-		# print(checker)
-		if checker.isdigit() == True:
-			if int(checker) == 0 or int(checker) == 1:
-				return True
+	checker = value[-1]
+	# print(value)
+	# print(checker)
+	if checker.isdigit() == True:
+		if int(checker) == 0 or int(checker) == 1:
+			return True
 		else:
 			return False
 
@@ -355,16 +357,17 @@ def calculateBalances(currentState):
 	return currentBalances
 
 #TODO for ajit
+#do we want to return bal as well?
 def checkIfTransactionsAreValid(currentState,NWSock):
 	trans = currentState['transactions'][:2]
 	bal= calculateBalances(currentState)
 	transCorrect = [True,True]
 	for transact in trans:
 		(sender, rec, amt) = transact.split()
-		if bal[/sender/] - amt < 0:
+		if bal[sender] - amt < 0:
 			transCorrect[trans] = False
 		else:
-			bal[/sender/] = bal[/sender/] - transactions[trans][/AMNT/]
+			bal[sender] = bal[sender] - amt
 	return transCorrect
 
 #TODO ajit: Create the block from currentState. Everything you need to make it is there.
@@ -395,6 +398,17 @@ def createBlock(currentState):
 	block = (head_of_block, transactions_in_block)
 	return block
 
+def connectToNetwork(proc_num):
+	NWSock = socket(AF_INET, SOCK_STREAM)
+	while True:
+		try:
+			NWSock.connect(('127.0.0.1', config.serverPortNumber))
+			break
+		except:
+			pass
+	NWSock.send(bytes(str(proc_num), encoding='utf8'))
+	return NWSock
+
 def validHash(transaction_list, nonce, string_to_hash, hash_value):
 	if(hash_value[-1] != 0 or hash_value[-1] != 1):
 		nonce = get_random_string()
@@ -418,6 +432,7 @@ def run(proc_num):
 			messageString = ''
 			try:
 				messageString = NWSock.recv(1024).decode('utf-8')
+
 			except:
 				pass
 
@@ -451,32 +466,20 @@ def run(proc_num):
 			# # receive message and then process if received
 
 
-			except socket.error as err:
-				pass
-
+			# except socket.error as err:
+			# 	pass
 			#
-			if currentState['mostRecentResponse'] != "N/A":
-				currentTime = datetime.datetime.now()
-				#get time passed since this response
-				if (currentTime - currentState['mostRecentResponse']).seconds > timeOutDuration:
-					print('Not received any responses to request. Proposition failed. Attempting to update blockChain')
-					sendSync(currentState,NWSock)
-					lastValidBlock = ''
+			# #
+			# if currentState['mostRecentResponse'] != "N/A":
+			# 	currentTime = datetime.datetime.now()
+			# 	#get time passed since this response
+			# 	if (currentTime - currentState['mostRecentResponse']).seconds > timeOutDuration:
+			# 		print('Not received any responses to request. Proposition failed. Attempting to update blockChain')
+			# 		sendSync(currentState,NWSock)
+			# 		lastValidBlock = ''
 
+	except:
+		pass
+### MAIN STARTS HERE
 
-
-
-def connectToNetwork(proc_num):
-	NWSock = socket(AF_INET, SOCK_STREAM)
-
-	while True:
-		try:
-			NWSock.connect(('127.0.0.1', config.serverPortNumber))
-			break
-		except:
-			pass
-	NWSock.send(bytes(str(proc_num), encoding='utf8'))
-	return NWSock
-
-
-run(proc_num=int(sys.argv[1]))
+run(proc_num = int(sys.argv[1]))
