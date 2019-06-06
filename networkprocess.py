@@ -23,32 +23,40 @@ def message_parser(connection, address):
     try:
         connectionfrom = "NW has received connection from ", address
         print(connectionfrom)
-        while True:
-            message = connection.recv(1024).decode()
-            try:
-                (sender, receiver, value) = message.split()
-                message_type = "transaction"
-                print(message)
-                if sender == 'A':
-                    rand_delay()
-                    aliceSocket.send(message.encode())
-                if sender == 'B':
-                    rand_delay()
-                    bobSocket.send(message.encode())
-                if sender == 'C':
-                    rand_delay()
-                    carolSocket.send(message.encode())
-                if sender == 'D':
-                    rand_delay()
-                    devonSocket.send(message.encode())
-                if sender == 'E':
-                    rand_delay()
-                    elizabethSocket.send(message.encode())
-            except ValueError:
-                print("not a transaction message")
+        # while True:
+        #     message = connection.recv(1024).decode()
+        #     try:
+        #         (sender, receiver, value) = message.split()
+        #         message_type = "transaction"
+        #         print(message)
+        #         if sender == 'A':
+        #             rand_delay()
+        #             aliceSocket.send(message.encode())
+        #         if sender == 'B':
+        #             rand_delay()
+        #             bobSocket.send(message.encode())
+        #         if sender == 'C':
+        #             rand_delay()
+        #             carolSocket.send(message.encode())
+        #         if sender == 'D':
+        #             rand_delay()
+        #             devonSocket.send(message.encode())
+        #         if sender == 'E':
+        #             rand_delay()
+        #             elizabethSocket.send(message.encode())
+        #     except ValueError:
+        #         print("not a transaction message")
 
     finally:
         connection.close()
+
+def connection_attempt(sock):
+    try:
+        conn, addr = sock.accept()
+        return conn, addr
+    except:
+        print("connection failed")
+
 
 networkSocket = socket(AF_INET, SOCK_STREAM)
 networkSocket.bind((config.server_ipaddress, config.network_port))
@@ -76,14 +84,18 @@ elizabethSocket.listen(6)
 clientSocket.listen(6)
 
 while True:
-    nw_conn, nw_addr = networkSocket.accept()
-    alice_conn, alice_addr = aliceSocket.accept()
-    bob_conn, bob_addr = bobSocket.accept()
-    carol_conn, carol_addr = carolSocket.accept()
-    devon_conn, devon_addr = devonSocket.accept()
-    elizabeth_conn, elizabeth_addr = elizabethSocket.accept()
-    client_conn, client_addr = clientSocket.accept()
-    _thread.start_new_thread(message_parser, (nw_conn, nw_addr))
+    # alice_conn, alice_addr = aliceSocket.accept()
+    # bob_conn, bob_addr = bobSocket.accept()
+    # carol_conn, carol_addr = carolSocket.accept()
+    # devon_conn, devon_addr = devonSocket.accept()
+    # elizabeth_conn, elizabeth_addr = elizabethSocket.accept()
+    # client_conn, client_addr = clientSocket.accept()
+    alice_conn, alice_addr = connection_attempt(aliceSocket)
+    bob_conn, bob_addr = connection_attempt(bobSocket)
+    carol_conn, carol_addr = connection_attempt(carolSocket)
+    devon_conn, devon_addr = connection_attempt(devonSocket)
+    elizabeth_conn, elizabeth_addr = connection_attempt(elizabethSocket)
+    client_conn, client_addr = connection_attempt(clientSocket)
     _thread.start_new_thread(message_parser, (alice_conn, alice_addr))
     _thread.start_new_thread(message_parser, (bob_conn, bob_addr))
     _thread.start_new_thread(message_parser, (carol_conn, carol_addr))

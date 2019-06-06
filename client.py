@@ -27,7 +27,7 @@ def listen(connection):
 # devon = get_connection(config.server_ipaddress, config.devon_port)
 # elizabeth = get_connection(config.server_ipaddress, config.elizabeth_port)
 client = get_connection(config.server_ipaddress, config.client_port)
-_thread.start_new_thread(listen, (client, ))
+#_thread.start_new_thread(listen, (client, ))
 
 # _thread.start_new_thread(listen, (alice, ))
 # _thread.start_new_thread(listen, (bob, ))
