@@ -287,52 +287,88 @@ timeOutDuration = 15
 # 		currentState['mostRecentResponse'] = 'N/A'
 # 		currentState['messagesReceived'] = []
 #
-# def get_random_string():
-# 	random_str = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(10)]) #length of 10
-# 	return random_str
-#
-#
-# def isValidBlock(block):
-# 	value = hashlib.sha256(block.encode()).hexdigest()
-# 		checker = value[-1]
-# 		# print(value)
-# 		# print(checker)
-# 		if checker.isdigit() == True:
-# 			if int(checker) == 0 or int(checker) == 1:
-# 				return True
-# 			else:
-# 				return False
-#
-# # TODO for ajit: put in the correct way to access depth number in the block
-# # Everything in slashes below needs to be replaced with the right thing based on how you organize the data structures
-# def getDepthNumFromBlock(block):
-# 	return block[/ depth num /]
-#
-# # TODO for ajit: get the right stuff to access the values
-# def calculateBalances(currentState):
-# 	currentBalances = initialBalances.copy()
-# 	for block in currentState['blockChain']:
-# 		for transaction in block[/TRANS/]:
-# 			currentBalances[receiver] = currentBalances[/receiver/] + /trans_amnt/
-# 			currentBalances[sender] = currentBalances[/receiver/] - /trans_amnt/
-# 	return currentBalances
-#
-# #TODO for ajit
-# def checkIfTransactionsAreValid(currentState,NWSock,transactions):
-# 	bal= calculateBalances(currentState)
-# 	transCorrect = [True,True]
-# 	for trans in [0,1]:
-# 		if bal[/sender/] - transactions[trans][/AMNT/] < 0:
-# 			transCorrect[trans] = False
-# 		else:
-# 			bal[/sender/] = bal[/sender/] - transactions[trans][/AMNT/]
-# 	return transCorrect
-#
-# #TODO ajit: Create the block from currentState. Everything you need to make it is there.
-# # We will only be generating the block once every round until it works. Youll need to calculate hash of previous block and stuff too
-# def createBlock(currentState):
-# 	# call get_random_string() to generate nonce
-# 	pass
+def get_random_string():
+	random_str = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(10)]) #length of 10
+	return random_str
+
+
+def isValidBlock(block):
+	value = hashlib.sha256(block.encode()).hexdigest()
+		checker = value[-1]
+		# print(value)
+		# print(checker)
+		if checker.isdigit() == True:
+			if int(checker) == 0 or int(checker) == 1:
+				return True
+		else:
+			return False
+
+# TODO for ajit: put in the correct way to access depth number in the block
+# Everything in slashes below needs to be replaced with the right thing based on how you organize the data structures
+def getDepthNumFromBlock(block):
+	return block[0][0]
+
+# TODO for ajit: get the right stuff to access the values
+def calculateBalances(currentState):
+	currentBalances = initialBalances.copy()
+	for block in currentState['blockChain']:
+		for transaction in block[1]:
+			try:
+				(sender, receiver, amt) = transaction.split()
+				currentBalances[receiver] = currentBalances[receiver] + amt
+				currentBalances[sender] = currentBalances[receiver] - amt
+			except ValueError:
+				print("not a transaction")
+
+	return currentBalances
+
+#TODO for ajit
+def checkIfTransactionsAreValid(currentState,NWSock,transactions):
+	bal= calculateBalances(currentState)
+	transCorrect = [True,True]
+	for trans in [0,1]:
+		if bal[/sender/] - transactions[trans][/AMNT/] < 0:
+			transCorrect[trans] = False
+		else:
+			bal[/sender/] = bal[/sender/] - transactions[trans][/AMNT/]
+	return transCorrect
+
+#TODO ajit: Create the block from currentState. Everything you need to make it is there.
+# We will only be generating the block once every round until it works. Youll need to calculate hash of previous block and stuff too
+def createBlock(currentState):
+	# call get_random_string() to generate nonce
+	transactions = currentState['transactions'][:2]
+	blockChain = currentState['blockChain']
+	nonce = get_random_string()
+	depth_newblock = len(blockChain) + 1
+	string_to_hash = transactions[0] + transactions[1] + nonce
+	hash_value = hashlib.sha256(string_to_hash.encode()).hexdigest()
+	if depth_newblock == 1:
+		prev_hash = "NULL"
+	else:
+		prev_transaction_1 = blockChain[len(blockChain)-1][1][0]
+		prev_transaction_2 = blockChain[len(blockChain)-1][1][1]
+		prev_depth = blockChain[len(blockChain)-1][0][0]
+		hash_prev = blockChain[len(blockChain)-1][0][1]
+		prev_nonce = blockChain[len(blockChain)-1][0][2]
+		string_hash =  prev_transaction_1 + prev_transaction_2 + str(prev_depth) + hash_prev + prev_nonce
+		prev_hash = hashlib.sha256(string_hash.encode()).hexdigest()
+
+	head_of_block = (depth_newblock, prev_hash, nonce)
+	transactions_in_block = []
+	transactions_in_block.append(transactions[0])
+	transactions_in_block.append(transactions[1])
+	block = (head_of_block, transactions_in_block)
+	return block
+
+def validHash(transaction_list, nonce, string_to_hash, hash_value):
+	if(hash_value[-1] != 0 or hash_value[-1] != 1):
+		nonce = get_random_string()
+		msg = transaction_list[0] + transaction_list[1] + nonce
+		hash = hashlib.sha256(msg.encode()).hexdigest()
+		return False, hash
+	elif(hash_value[-1] == 0 or hash_value[-1] == 1):
+		return True, hash_value
 
 def transaction_message(networkSocket, client_conn,proc_num):
 
@@ -358,35 +394,36 @@ def transaction_message(networkSocket, client_conn,proc_num):
 			# print(value[-1])
 			# print(type(value[-1])) #type string
 
-			# if(len(currentState['transactions']) > 1):
-			# 	#creates block based on current state.
-			# 	block = createBlock(currentState)
-			# 	if block == lastValidBlock:
-			# 		#this means that we have already calculated the right nonce, and because we create block from current state, we know that the block is valid for being the next value
-			# 		# so a block hasnt been proposed yet and this block is able to be the next one if paxos is down.
-			# 		pass
-			# 	else:
-			# 		if isValidBlock(block):
-			# 			sendPropMessages(currentState,networkSocket,block)
-			# 			lastValidBlock = block
-			# # receive message and then process if received
-			# try:
-			# 	receivedMessage = networkSocket.recv(1024).decode()
-            #     messageDict = ast.literal_eval(messageString)
-            #     receiveMessage(messageDict,currentState,networkSocket,transactions):
+			if(len(currentState['transactions']) > 1):
+				#creates block based on current state.
+				block = createBlock(currentState)
+				if block == lastValidBlock:
+					#this means that we have already calculated the right nonce, and because we create block from current state,
+					# we know that the block is valid for being the next value
+					# so a block hasnt been proposed yet and this block is able to be the next one if paxos is down.
+					pass
+				else:
+					if isValidBlock(block):
+						sendPropMessages(currentState,networkSocket,block)
+						lastValidBlock = block
+			# receive message and then process if received
+			try:
+				receivedMessage = networkSocket.recv(1024).decode()
+                messageDict = ast.literal_eval(messageString)
+                receiveMessage(messageDict,currentState,networkSocket,transactions):
+
+
+			except socket.error as err:
+				pass
+
 			#
-			#
-			# except socket.error as err:
-			# 	pass
-			#
-			# #
-			# if currentState['mostRecentResponse'] != "N/A":
-			# 	currentTime = datetime.datetime.now()
-			# 	#get time passed since this response
-			# 	if (currentTime - currentState['mostRecentResponse']).seconds > timeOutDuration:
-			# 		print('Not received any responses to request. Proposition failed. Attempting to update blockChain')
-			# 		sendSync(currentState,NWSock)
-			# 		lastValidBlock = ''
+			if currentState['mostRecentResponse'] != "N/A":
+				currentTime = datetime.datetime.now()
+				#get time passed since this response
+				if (currentTime - currentState['mostRecentResponse']).seconds > timeOutDuration:
+					print('Not received any responses to request. Proposition failed. Attempting to update blockChain')
+					sendSync(currentState,NWSock)
+					lastValidBlock = ''
 
 
 
@@ -394,19 +431,6 @@ def transaction_message(networkSocket, client_conn,proc_num):
 
 	finally:
 		client_conn.close()
-
-
-
-
-# I dont see there being any depth in your hash here. Im gonna do some reworking
-def get_hash(transactions):
-	trans_list = []
-	trans_list.append(transactions[0])
-	trans_list.append(transactions[1])
-	temp = True
-	while(temp):
-		rdstr = get_random_string()
-		msg = transactions[0] + transactions[1] + rdstr
 
 
 
