@@ -394,8 +394,8 @@ def createBlock(currentState):
 		prev_hash = "NULL"
 
 	else:
-		prev_transaction_1 = str(blockChain[len(blockChain)-1][1][0][0]) + " " + str(blockChain[len(blockChain)-1][1][0][1]]) + " " + str(blockChain[len(blockChain)-1][1][0][2])
-		prev_transaction_2 = str(blockChain[len(blockChain)-1][1][1][0]) + " " + str(blockChain[len(blockChain)-1][1][1][1])) + " " + str(blockChain[len(blockChain)-1][1][1][2])
+		prev_transaction_1 = str(blockChain[len(blockChain)-1][1][0]) + " " + str(blockChain[len(blockChain)-1][1][1]) + " " + str(blockChain[len(blockChain)-1][1][0][2])
+		prev_transaction_2 = str(blockChain[len(blockChain)-1][1][0]) + " " + str(blockChain[len(blockChain)-1][1][1]) + " " + str(blockChain[len(blockChain)-1][1][1][2])
 		prev_depth = blockChain[len(blockChain)-1][0][0]
 		hash_prev = blockChain[len(blockChain)-1][0][1]
 		prev_nonce = blockChain[len(blockChain)-1][0][2]
@@ -431,7 +431,7 @@ def blockEquals(block1,block2):
 	if block1 =='' or block2 == '':
 		return False
 
-	if block1[0][0] == block2[0][0] and block1[0][1] == block2[0][1]: 
+	if block1[0][0] == block2[0][0] and block1[0][1] == block2[0][1]:
 		for transaction1,transaction2 in zip(block1[1],block2[1]):
 			if transaction1[0] != transaction2[0] or transaction1[1] != transaction2[1] or transaction1[2] != transaction2[2]:
 				return False
@@ -491,7 +491,7 @@ def run(proc_num):
 					sendPropMessages(currentState,NWSock,block)
 					lastValidBlock = block
 		# receive message and then process if received
-		
+
 		if currentState['mostRecentResponse'] != "N/A":
 			currentTime = datetime.datetime.now()
 			#get time passed since this response
