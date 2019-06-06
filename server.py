@@ -207,7 +207,7 @@ def receiveDecision(currentState,message,NWSock):
 			sendSync(currentState,NWSock)
 	else:
 		# The block is the next in the chain. Now we validate the transactions
-		validityCheck = checkIfTransactionsAreValid(currentState,NWSock,transactions)
+		validityCheck = checkIfTransactionsAreValid(currentState,NWSock)
 		if validityCheck == [True,True]:
 
 			#if decided value is from this proc_num
@@ -355,11 +355,13 @@ def calculateBalances(currentState):
 	return currentBalances
 
 #TODO for ajit
-def checkIfTransactionsAreValid(currentState,NWSock,transactions):
+def checkIfTransactionsAreValid(currentState,NWSock):
+	trans = currentState['transactions'][:2]
 	bal= calculateBalances(currentState)
 	transCorrect = [True,True]
-	for trans in [0,1]:
-		if bal[/sender/] - transactions[trans][/AMNT/] < 0:
+	for transact in trans:
+		(sender, rec, amt) = transact.split()
+		if bal[/sender/] - amt < 0:
 			transCorrect[trans] = False
 		else:
 			bal[/sender/] = bal[/sender/] - transactions[trans][/AMNT/]
