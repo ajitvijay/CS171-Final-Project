@@ -390,7 +390,7 @@ def createBlock(currentState):
 	# print(nonce)
 	depth_newblock = len(blockChain) + 1
 	# print(depth_newblock)
-	blockStr = 'NULL'
+	prevBlockStr = 'NULL'
 	if depth_newblock > 1:
 		prevBlockStr = str(currentState['blockChain'] [-1])
 		prevBlockStr=  hashlib.sha256(blockStr.encode()).hexdigest()
@@ -452,7 +452,6 @@ def run(proc_num):
 	print('NW Connected')
 
 	while True:
-		print('Loop transactions is: ' + str(currentState['transactions']))
 		messageString = ''
 		try:
 			messageString = NWSock.recv(1024).decode('utf-8')
