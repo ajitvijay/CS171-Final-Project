@@ -26,7 +26,8 @@ def listen(connection):
 # carol = get_connection(config.server_ipaddress, config.carol_port)
 # devon = get_connection(config.server_ipaddress, config.devon_port)
 # elizabeth = get_connection(config.server_ipaddress, config.elizabeth_port)
-client = get_connection(config.server_ipaddress, config.network_port)
+client = get_connection(config.server_ipaddress, config.client_port)
+_thread.start_new_thread(listen, (client, ))
 
 # _thread.start_new_thread(listen, (alice, ))
 # _thread.start_new_thread(listen, (bob, ))
@@ -36,7 +37,6 @@ client = get_connection(config.server_ipaddress, config.network_port)
 
 while(1):
 	transaction = input("Enter Transaction: ")
-
 	try:
 		(sender, receiver, value) = transaction.split()
 	except ValueError:
