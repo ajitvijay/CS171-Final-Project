@@ -16,7 +16,7 @@ import os.path
 from os import path
 
 initialBalances = {'A': 100, 'B': 100, 'C': 100, 'D': 100, 'E': 100}
-timeOutDuration = 15
+timeOutDuration = 10
 
 
 
@@ -86,16 +86,16 @@ def saveState(currentState):
 	saveState['mostRecentResponse'] = 'N/A'
 	saveState['messagesReceived'] = []
 	saveState['transactions'] = []
-	saveState['inSync'] = False
+	saveState['inSync'] = True
 
 	print(str(saveState))
 	print(str(currentState))
-	pickle.dump(saveState,'save' + str(currentState['proc_num']) + '.txt')
+	pickle.dump(saveState,open( 'save' + str(currentState['proc_num']) + '.txt', "wb" ))
 
 def readState(currentState):
 	if path.exists("save" + str(currentState['proc_num'] ) + ".txt" ):
 		currentState = pickle.load( open( "save" + str(currentState['proc_num']) +'.txt' , "rb" ) ) 
-
+	return currentState
 
 def sendPropAck(message,currentState,NWSock):
 	newMessage = {}
@@ -122,11 +122,13 @@ def sendAccAck(message,NWSock):
 def sendPropMessages(currentState,NWSock,newBlock):
 	newMessage = {}
 	newMessage['type'] = 'prop'
-	newMessage['bal'] = (getDepthNumFromBlock(newBlock),currentState['BallotNum'][1]+1,currentState['proc_num'])
+	newMessage['bal'] = (getDepthNumFromBlock(newBlock),currentState['BallotNum'][1] +1,currentState['proc_num'])
+	#print(newMessage['bal'])
 	newMessage['sender'] = currentState['proc_num']
 	currentState['messagesReceived'] = []
 	currentState['state'] = 'waiting for prop_ack'
 	currentState['value'] = newBlock
+	print('Sending prop messages with ballot num: ' + str(newMessage['bal']))
 	for server in [0,1,2,3,4]:
 		newMessage['destination'] = server
 		if newMessage['destination'] == newMessage['sender']:
@@ -153,15 +155,21 @@ def sendDecisionMessages(currentState,NWSock):
 
 def sendAccMessages(currentState,NWSock):
 	value = None
-	b = (-999,-999,-999)
+	b = (len(currentState['blockChain']) + 1,-999,-999)
 	for message in currentState['messagesReceived']:
 		if message['acceptVal'] != 'N/A':
 			if balGreaterThanOrEqual(message['acceptBal'],b):
 				value = message['acceptVal']
 				b= message['acceptBal']
+	# print('')
+	# print('acceptVal is: ' + str(value))
+	
 	newMessage = {}
 	newMessage ['type'] = 'acc'
 	newMessage ['bal'] = currentState['messagesReceived'][0]['bal']
+	# print('bal remains: ' + str(newMessage['bal']))	
+	# print('')
+
 	if value is not None:
 		newMessage['value'] = value
 	else:
@@ -247,28 +255,30 @@ def rejectTrans(transaction,NWSock,currentState):
 
 
 def receiveDecision(currentState,message,NWSock):
-# NEED ADD THING BELOW:
+	if currentState['proc_num'] == message['sender']:		
+		currentState['state'] = 'N/A'
+
+
+	#print(message['value'])
 	if len(currentState['blockChain']) + 1 != getDepthNumFromBlock(message['value']):
-		#check to see if we have second decision:
+
+		# print('New block is not the next value')
+			
 		if len(currentState['blockChain']) == getDepthNumFromBlock(message['value']):
-			pass
+			currentState['mostRecentResponse'] = datetime.datetime.now()
 		else:
 			print('Received decision out of order, updating blockchain now for all blocks past block depth:' + str(len(currentState['blockChain'])))
-			time.sleep(7)
 			sendSync(currentState,NWSock)
 	else:
 		# The block is the next in the chain. Now we validate the transactions
 		validityCheck = checkIfTransactionsAreValid(currentState,NWSock, message['value'])
-
+		#print(validityCheck)
 		if validityCheck == [True,True]:
-			# print('VALID')
+			#print('VALID')
 			#if decided value is from this proc_num
 			print('Received validated block decision: ' + str(message['value']))
-			if currentState['proc_num'] == message['sender']:
-				trans = currentState['transactions'][:2]
-				currentState['transactions'].remove(trans[0])
-				currentState['transactions'].remove(trans[1])
-
+			print('')
+			print('SAVE STATE OUTPUT BELOW:')
 			# because we added a new block, we have to reset paxos states
 			currentState['state'] = 'N/A'
 			currentState['value'] = 'N/A'
@@ -279,15 +289,24 @@ def receiveDecision(currentState,message,NWSock):
 			currentState['messagesReceived'] = []
 			currentState['blockChain'].append(message['value'])
 
-			currentState['BallotNum'] = (currentState['BallotNum'][0]+1,-1,-1)
-		else:
+			currentState['BallotNum'] = (len(currentState['blockChain']),0,-1)
 
+
+			if currentState['proc_num'] == turnLetterIntoNum(message['value'][1][0][0]):
+				trans = currentState['transactions'][:2]
+				currentState['transactions'].remove(trans[0])
+				currentState['transactions'].remove(trans[1])
+
+			saveState(currentState)
+		else:
+			print('Invalid transactions')
 			currentState['acceptVal']= 'N/A'
 			currentState['acceptBal']= 'N/A'
 
 						# if transactions are not valid:
 			# print(str(currentState['transactions']))
 			if currentState['proc_num'] == message['sender']:
+				# print('Making state N/A')
 				currentState['state'] = 'N/A'
 				currentState['mostRecentResponse'] = "N/A"
 				trans = currentState['transactions'][:2]
@@ -360,9 +379,9 @@ def receiveMessage(message,currentState,NWSock):
 									# Test if block is to be the next block in the chain
 									if getDepthNumFromBlock(block) == len(currentState['blockChain']) + 1:
 										currentState['blockChain'].append(block)
-										print('Added the block to chain')
+										print('Updated the blockchain')
 										saveState(currentState)
-										currentState['inSync'] = True
+								currentState['inSync'] = True
 
 							else:
 								if message['type'] == 'transaction':
@@ -371,15 +390,12 @@ def receiveMessage(message,currentState,NWSock):
 									print('Transaction List is now: ' + str(currentState['transactions']))
 								else:
 									if message['type'] == 'print_set':
-										print('Received request for transaction set')
 										sendTransSet(currentState,NWSock)
 									else:
 										if message['type'] == 'print_balance' and currentState['inSync']:
-											print('Received request for balances')
 											sendBalance(currentState,NWSock)
 										else:
 											if message['type'] ==  'print_blockchain' and currentState['inSync']:
-												print('Received request for blockchain')
 												sendBlockChain(currentState,NWSock)
 	return 0
 
@@ -398,7 +414,7 @@ def initiateCurrentState(proc_num):
 	currentState['transactions'] = []
 	currentState['blockChain'] = []
 	currentState['inSync'] = True
-	readState(currentState)
+	currentState = readState(currentState)
 	return currentState
 
 def get_random_string():
@@ -460,6 +476,7 @@ def createBlock(currentState):
 	nonce = get_random_string()
 	# print(nonce)
 	depth_newblock = len(blockChain) + 1
+	# print('New created block has depth: ' + str(depth_newblock))
 	# print(depth_newblock)
 	prevBlockStr = 'NULL'
 	if depth_newblock > 1:
@@ -514,7 +531,7 @@ def blockEquals(block1,block2):
 def run(proc_num):
 
 	currentState = initiateCurrentState(proc_num)
-
+	print(currentState)
 	lastValidBlock = ''
 
 	NWSock = connectToNetwork(currentState['proc_num'])
@@ -549,6 +566,7 @@ def run(proc_num):
 			#creates block based on current state.
 			block = createBlock(currentState)
 			if blockEquals(block,lastValidBlock):
+				# print('Block NOT equals')
 				#this means that we have already calculated the right nonce, and because we create block from current state, we know that the block is valid for being the next value
 				# so a block hasnt been proposed yet and this block is able to be the next one if paxos is down.
 				pass
@@ -563,7 +581,7 @@ def run(proc_num):
 			currentTime = datetime.datetime.now()
 			#get time passed since this response
 			if (currentTime - currentState['mostRecentResponse']).seconds > timeOutDuration:
-				print('Not received any responses to request. Proposition failed. Attempting to update blockChain')
+				print('Not received any responses to request. Proposition failed. Requesting blockchain update before recalculating block')
 				sendSync(currentState,NWSock)
 				lastValidBlock = ''
 				currentState['mostRecentResponse'] = "N/A"
