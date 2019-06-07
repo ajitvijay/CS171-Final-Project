@@ -65,29 +65,21 @@ def separateMessages(message):
     return messageStrings
 
 
-def sendCustom(NWSock,request):
+def sendCustom(NWSock,request, node):
 	newMessage = {}
 	newMessage['type'] = request
 	newMessage['sender'] = -1
-
-	for server in [0,1,2,3,4]:
-		newMessage['destination'] = server
-		NWSock.send(bytes(str(newMessage) + '%' , encoding='utf8'))
+	newMessage['destination'] = turnLetterIntoNum(node)
+	NWSock.send(bytes(str(newMessage) + '%' , encoding='utf8'))
 
 
 def checkForMessages(NWSock,clientState):
-
-
 	while True:
 		messageString = ''
-
-
 		try:
 				messageString = NWSock.recv(4096).decode('utf-8')
-
 		except:
 			pass
-
 		if messageString != '':
 			messages = separateMessages(messageString)
 			for message in messages:
@@ -127,15 +119,15 @@ def interpretInput(input,NWSock):
 
 	transaction = input.split()
 	if transaction[0].upper() == 'printBlockchain'.upper():
-		sendCustom(NWSock,'print_blockchain')
+		sendCustom(NWSock,'print_blockchain', transaction[1].upper())
 		clientState['receivedBloc'] = False
 	else:
 		if transaction[0].upper() == 'printBalance'.upper():
-			sendCustom(NWSock,'print_balance')
+			sendCustom(NWSock,'print_balance', transaction[1].upper())
 			clientState['receivedBal'] = False
 		else:
 			if transaction[0].upper() == 'printSet'.upper():
-				sendCustom(NWSock,'print_set')
+				sendCustom(NWSock,'print_set',transaction[1].upper())
 				clientState['receivedSet'] = False
 			else:
 				if len(transaction) == 3:
