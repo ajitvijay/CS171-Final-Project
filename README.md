@@ -2,6 +2,7 @@
 
 ## We have implemented Paxos using 5 servers, a network delay process, and a client process.
 ## To run the program do the following:
+* we are using python3.7 so make sure to specify when you run it
 * run networkprocess.py first
 * run server.py with 0,1,2,3,4 as the command line arguments where each number represents a different server.
 * run client.py to connect to network process and you can start sending transactions
