@@ -42,7 +42,7 @@ def sendTransaction(transaction, NWSock):
 	newMessage['sender'] = -1
 	newMessage['destination'] = turnLetterIntoNum(transaction[0])
 	newMessage['transaction'] = transaction
-	NWSock.send(bytes(str(newMessage) , encoding='utf8'))
+	NWSock.send(bytes(str(newMessage) + '%' , encoding='utf8'))
 
 
 def listen(connection):
