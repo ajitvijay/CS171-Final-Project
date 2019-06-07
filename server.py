@@ -14,6 +14,19 @@ import datetime
 initialBalances = {'A': 100, 'B': 100, 'C': 100, 'D': 100, 'E': 100}
 timeOutDuration = 15
 
+def calculateBalances(currentState):
+	currentBalances = initialBalances.copy()
+	for block in currentState['blockChain']:
+		for transaction in block[1]:
+			sender = transaction[0]
+			receiver = transaction[1]
+			amt = transaction[2]
+			currentBalances[receiver] = currentBalances[receiver] + int(amt)
+			currentBalances[sender] = currentBalances[receiver] - int(amt)
+			# print(currentBalances[receiver])
+			# print(currentBalances[sender])
+	return currentBalances
+
 
 def separateMessages(message):
     remainingMessage = message
@@ -46,14 +59,17 @@ def turnLetterIntoNum(letter):
 
 
 def balGreaterThanOrEqual(bal,BallotNum):
-	if bal[0] > BallotNum[0]:
+	print('Comparing:')
+	print(str(bal) + ' ' + str(BallotNum))
+	if int(bal[0]) > int(BallotNum[0]):
 		return True
 	else:
-		if bal[0] == BallotNum[0] and bal[1] > BallotNum[1]:
+		if int(bal[0]) == int(BallotNum[0]) and int(bal[1] > BallotNum[1]):
 			return True
 		else:
-			if bal[0] == BallotNum[0] and bal[1]== BallotNum[1]:
+			if int(bal[0] == BallotNum[0]) and int(bal[1])== int(BallotNum[1]):
 				return bal[2] >= BallotNum[2]
+	return False
 
 def saveData(currentState):
 	pass
@@ -163,6 +179,7 @@ def sendSyncResponse(currentState,message,NWSock):
 	newMessage = {}
 	newMessage['type'] = 'sync-response'
 	newMessage['data'] = currentState['blockChain'][message['blockChainLength']:]
+	print('SYNCING WITH DATA: ' + str(newMessage['data']))
 	newMessage['bal'] = currentState['BallotNum']
 	newMessage['sender'] = message['destination']
 	newMessage['destination'] = message['sender']
@@ -185,7 +202,7 @@ def sendBalance(currentState,NWSock):
 	newMessage['type'] = 'balances'
 	newMessage['sender'] = currentState['proc_num']
 	newMessage['destination'] = -1
-	newMessage['balances'] = calculateBalance(currentState)
+	newMessage['balances'] = calculateBalances(currentState)
 	newMessage['depth'] = len(currentState['blockChain'])
 
 	NWSock.send(bytes(str(newMessage) + '%', encoding='utf8'))
@@ -193,7 +210,7 @@ def sendBalance(currentState,NWSock):
 
 def sendBlockChain(currentState,NWSock):
 	newMessage = {}
-	newMessage['type'] = 'balances'
+	newMessage['type'] = 'blockchain'
 	newMessage['sender'] = currentState['proc_num']
 	newMessage['destination'] = -1
 	newMessage['blockChain'] = currentState['blockChain']
@@ -216,7 +233,7 @@ def receiveDecision(currentState,message,NWSock):
 		if len(currentState['blockChain']) == getDepthNumFromBlock(message['value']):
 			pass
 		else:
-			print('Received decision out of order, updating blockchain now for all blocks past:' + str(newMessage['blockChainLength']))
+			print('Received decision out of order, updating blockchain now for all blocks past:' + str(len(currentState['blockChain'])))
 			time.sleep(7)
 			sendSync(currentState,NWSock)
 	else:
@@ -239,6 +256,8 @@ def receiveDecision(currentState,message,NWSock):
 
 			currentState['messagesReceived'] = []
 			currentState['blockChain'].append(message['value'])
+
+			currentState['BallotNum'] = (currentState['BallotNum'][0]+1,-1,-1)
 		else:
 			# if transactions are not valid:
 			if currentState['proc_num'] == message['sender']:
@@ -300,11 +319,17 @@ def receiveMessage(message,currentState,NWSock):
 							sendSyncResponse(currentState,message,NWSock)
 						else:
 							if message['type'] == 'sync-response':
+
 								print('Received data from another server')
+								
 								for block in message['data']:
+									print('RECEIVED SYNC BLOCK:' + str(block))
 									# Test if block is to be the next block in the chain
 									if getDepthNumFromBlock(block) == len(currentState['blockChain']) + 1:
-										currentState['blockChain'] = currentState['blockChain'].append(block)
+										currentState['blockChain'].append(block)
+										print('Added the block to chain')
+								currentState['inSync'] = True
+
 							else:
 								if message['type'] == 'transaction':
 									print('Received transaction request from client')
@@ -314,10 +339,10 @@ def receiveMessage(message,currentState,NWSock):
 									if message['type'] == 'print_set':
 										sendTransSet(currentState,NWSock)
 									else:
-										if message['type'] == 'print_balance':
+										if message['type'] == 'print_balance' and currentState['inSync']:
 											sendBalance(currentState,NWSock)
 										else:
-											if message['type'] ==  'print_blockchain':
+											if message['type'] ==  'print_blockchain' and currentState['inSync']:
 												sendBlockChain(currentState,NWSock)
 	return 0
 
@@ -336,6 +361,8 @@ def initiateCurrentState(proc_num = -25,file=None):
 		currentState['messagesReceived'] = []
 		currentState['transactions'] = []
 		currentState['blockChain'] = []
+		currentState['inSync'] = True
+
 	return currentState
 
 def get_random_string():
@@ -364,21 +391,6 @@ def getDepthNumFromBlock(block):
 	return block[0][0]
 	# checked function and its works
 
-# TODO for ajit: get the right stuff to access the values
-def calculateBalances(currentState):
-	currentBalances = initialBalances.copy()
-	for block in currentState['blockChain']:
-		for transaction in block[1]:
-			sender = transaction[0]
-			receiver = transaction[1]
-			amt = transaction[2]
-			currentBalances[receiver] = currentBalances[receiver] + int(amt)
-			currentBalances[sender] = currentBalances[receiver] - int(amt)
-			# print(currentBalances[receiver])
-			# print(currentBalances[sender])
-	return currentBalances
-
-#TODO for ajit
 #do we want to return bal as well?
 def checkIfTransactionsAreValid(currentState,NWSock,new_block):
 	trans = new_block[1]
@@ -470,7 +482,7 @@ def run(proc_num):
 	while True:
 		messageString = ''
 		try:
-			messageString = NWSock.recv(1024).decode('utf-8')
+			messageString = NWSock.recv(4096).decode('utf-8')
 
 		except:
 			pass
@@ -479,7 +491,7 @@ def run(proc_num):
 			messages = separateMessages(messageString)
 			for message in messages:
 				messageDict = ast.literal_eval(message)
-				print('Received message' + str(messageDict))
+				# print('Received message' + str(messageDict))
 				receiveMessage(messageDict,currentState,NWSock)
 
 
@@ -492,7 +504,7 @@ def run(proc_num):
 		# 		lastValidBlock = ''
 
 
-		if(len(currentState['transactions']) > 1):
+		if(len(currentState['transactions']) > 1 and currentState['inSync']):
 			#creates block based on current state.
 			block = createBlock(currentState)
 			if blockEquals(block,lastValidBlock):
@@ -514,6 +526,9 @@ def run(proc_num):
 				sendSync(currentState,NWSock)
 				lastValidBlock = ''
 				currentState['mostRecentResponse'] = "N/A"
+				currentState['inSync'] = False
+				
+
 
 ### MAIN STARTS HERE
 
