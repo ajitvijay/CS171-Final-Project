@@ -22,7 +22,11 @@ def calculateBalances(currentState):
 			receiver = transaction[1]
 			amt = transaction[2]
 			currentBalances[receiver] = currentBalances[receiver] + int(amt)
+<<<<<<< HEAD
 			currentBalances[sender] = currentBalances[sender] - int(amt)
+=======
+			currentBalances[sender] = currentBalances[receiver] - int(amt)
+>>>>>>> d20fc8ce8a69891d3f564580425491861921d0d3
 			# print(currentBalances[receiver])
 			# print(currentBalances[sender])
 	return currentBalances
@@ -321,7 +325,11 @@ def receiveMessage(message,currentState,NWSock):
 							if message['type'] == 'sync-response':
 
 								print('Received data from another server')
+<<<<<<< HEAD
 
+=======
+								
+>>>>>>> d20fc8ce8a69891d3f564580425491861921d0d3
 								for block in message['data']:
 									print('RECEIVED SYNC BLOCK:' + str(block))
 									# Test if block is to be the next block in the chain
@@ -527,7 +535,11 @@ def run(proc_num):
 				lastValidBlock = ''
 				currentState['mostRecentResponse'] = "N/A"
 				currentState['inSync'] = False
+<<<<<<< HEAD
 
+=======
+				
+>>>>>>> d20fc8ce8a69891d3f564580425491861921d0d3
 
 
 ### MAIN STARTS HERE
