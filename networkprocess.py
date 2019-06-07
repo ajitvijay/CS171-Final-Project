@@ -12,7 +12,19 @@ def sendMessageWithDelay(message, destination,destinationInt):
     print('Sending message: ' + str (message))
     if int(destinationInt) >0:
         time.sleep(sleepAmnt)
-    destination.send(bytes(message,encoding='utf-8'))
+    destination.send(bytes(message + '%',encoding='utf-8'))
+
+def separateMessages(message):
+    remainingMessage = message
+    messageStrings = []
+    while len(remainingMessage) > 3:
+        messageStrings.append(remainingMessage[:remainingMessage.find('%')])
+        if len(remainingMessage[remainingMessage.find('%') :]) > 3:
+            remainingMessage = remainingMessage[remainingMessage.find('%') + 1:]
+        else:
+            remainingMessage = ''
+    return messageStrings
+
 
 
 def bindSocketAndSave():
@@ -39,7 +51,7 @@ def bindSocketAndSave():
 
 
 def startNetwork():
-
+    
     serverListener = bindSocketAndSave()
 
     serverSockets = {}
@@ -54,23 +66,24 @@ def startNetwork():
             print('Started connection with server: ' + procID)
 
             sock.setblocking(0)
-            serverSockets[procID] = sock
+            serverSockets[procID] = sock 
         except socket.error as err:
             pass
-
+            
 # Send messages with delay
         for socketVar in serverSockets.values():
             try:
                 messageString = socketVar.recv(1024).decode('utf-8')
 
                 if messageString != '':
-                    print('Received message: ' + messageString)
+                    messages = separateMessages(messageString)
+                    for message in messages:
+                        print('Received message: ' + message)
 
-                    messageDict = ast.literal_eval(messageString)
-                    #print(messageDict['destination'])
-                    #print(type(messageDict['destination']))
-                    sendThread = threading.Thread(target=sendMessageWithDelay, args=(messageString, serverSockets[str(messageDict['destination'])],messageDict['destination']) )
-                    sendThread.start()
+                        messageDict = ast.literal_eval(message)
+
+                        sendThread = threading.Thread(target=sendMessageWithDelay, args=(message, serverSockets[str(messageDict['destination'])],messageDict['destination']) )
+                        sendThread.start()
 
             except socket.error as err:
                 pass
