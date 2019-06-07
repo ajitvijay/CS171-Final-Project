@@ -149,7 +149,6 @@ def sendSync(currentState,NWSock):
 		newMessage['blockChainLength'] = len(currentState['blockChain'])
 		newMessage['bal'] = currentState['BallotNum']
 		newMessage['sender'] = currentState['proc_num']
-		NWSock.send(bytes(str(newMessage) + '%', encoding='utf8'))
 
 		for server in [0,1,2,3,4]:
 			newMessage['destination'] = server
@@ -222,7 +221,7 @@ def receiveDecision(currentState,message,NWSock):
 			sendSync(currentState,NWSock)
 	else:
 		# The block is the next in the chain. Now we validate the transactions
-		validityCheck = checkIfTransactionsAreValid(currentState,NWSock)
+		validityCheck = checkIfTransactionsAreValid(currentState,NWSock, message['value'])
 		if validityCheck == [True,True]:
 
 			#if decided value is from this proc_num
@@ -381,8 +380,8 @@ def calculateBalances(currentState):
 
 #TODO for ajit
 #do we want to return bal as well?
-def checkIfTransactionsAreValid(currentState,NWSock):
-	trans = currentState['transactions'][:2]
+def checkIfTransactionsAreValid(currentState,NWSock,new_block):
+	trans = new_block[1]
 	bal= calculateBalances(currentState)
 	transCorrect = [True,True]
 	for transact in [0,1]:
@@ -514,6 +513,7 @@ def run(proc_num):
 				print('Not received any responses to request. Proposition failed. Attempting to update blockChain')
 				sendSync(currentState,NWSock)
 				lastValidBlock = ''
+				currentState['mostRecentResponse'] = "N/A"
 
 ### MAIN STARTS HERE
 

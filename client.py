@@ -23,7 +23,7 @@ def connectToNetwork(proc_num):
 def turnLetterIntoNum(letter):
 	if letter.upper() == 'A':
 		return 0
-	else: 
+	else:
 		if letter.upper() == 'B':
 			return 1
 		else:
