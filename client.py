@@ -126,21 +126,21 @@ def receiveMessage(messageDict,clientState):
 def interpretInput(input,NWSock):
 
 	transaction = input.split()
-	if transaction[0] == 'printBlockchain':
+	if transaction[0].upper() == 'printBlockchain'.upper():
 		sendCustom(NWSock,'print_blockchain')
 		clientState['receivedBloc'] = False
 	else:
-		if transaction[0] == 'printBalance':
+		if transaction[0].upper() == 'printBalance'.upper():
 			sendCustom(NWSock,'print_balance')
 			clientState['receivedBal'] = False
 		else:
-			if transaction[0] == 'printSet':
+			if transaction[0].upper() == 'printSet'.upper():
 				sendCustom(NWSock,'print_set')
 				clientState['receivedSet'] = False
 			else:
 				if len(transaction) == 3:
 					(sender, receiver, value) = transaction
-					transaction = (sender, receiver, value)
+					transaction = (sender.upper(), receiver.upper(), value)
 					sendTransaction(transaction,NWSock)
 
 NWSock = connectToNetwork(-1)
