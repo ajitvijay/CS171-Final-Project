@@ -23,7 +23,7 @@ def connectToNetwork(proc_num):
 def turnLetterIntoNum(letter):
 	if letter.upper() == 'A':
 		return 0
-	else:
+	else: 
 		if letter.upper() == 'B':
 			return 1
 		else:
@@ -48,32 +48,117 @@ def sendTransaction(transaction, NWSock):
 def listen(connection):
 	try:
 		while True:
-			msg = connection.recv(1024).decode()
+			msg = connection.recv(4096).decode()
 			print(msg)
 	finally:
 		connection.close()
 
-# alice = get_connection(config.server_ipaddress, config.alice_port)
-# bob = get_connection(config.server_ipaddress, config.bob_port)
-# carol = get_connection(config.server_ipaddress, config.carol_port)
-# devon = get_connection(config.server_ipaddress, config.devon_port)
-# elizabeth = get_connection(config.server_ipaddress, config.elizabeth_port)
+def separateMessages(message):
+    remainingMessage = message
+    messageStrings = []
+    while len(remainingMessage) > 3:
+        messageStrings.append(remainingMessage[:remainingMessage.find('%')])
+        if len(remainingMessage[remainingMessage.find('%') :]) > 3:
+            remainingMessage = remainingMessage[remainingMessage.find('%') + 1:]
+        else:
+            remainingMessage = ''
+    return messageStrings
+
+
+def sendCustom(NWSock,request):
+	newMessage = {}
+	newMessage['type'] = request
+	newMessage['sender'] = -1
+
+	for server in [0,1,2,3,4]:
+		newMessage['destination'] = server
+		NWSock.send(bytes(str(newMessage) + '%' , encoding='utf8'))
+
+
+def checkForMessages(NWSock,clientState):
+
+
+	while True:
+		messageString = ''
+
+
+		try:
+				messageString = NWSock.recv(4096).decode('utf-8')
+
+		except:
+			pass
+
+		if messageString != '':
+			messages = separateMessages(messageString)
+			for message in messages:
+				messageDict = ast.literal_eval(message)
+				# print('Received message' + str(messageDict))
+				receiveMessage(messageDict,clientState)
+
+
+def receiveMessage(messageDict,clientState):
+	# print('Receiving message')
+
+	if messageDict['type'] == 'blockchain' and clientState['receivedBloc'] == False:
+		clientState['receivedBloc'] = True
+
+		print('BlockChain received:')
+		for block in messageDict['blockChain']:
+			print (str(block))
+	else:
+		if messageDict['type'] == 'balances' and clientState ['receivedBal'] == False:
+			clientState['receivedBal'] = True
+
+			print('Balances received:')
+			for bal in messageDict['balances']:
+				print(str(bal) + ': ' + str(messageDict['balances'][bal]))
+		else:
+			if messageDict['type'] == 'trans-set':
+				print('Set of transactions recorded at: ' + str(messageDict['sender']))
+				for trans in messageDict['transactions']:
+					print(str(trans))
+			else: 
+				if messageDict['type'] == 'failure':
+					print('Transaction ' + str(messageDict['data']) + ' failed. ')
+
+		
+
+def interpretInput(input,NWSock):
+	
+	transaction = input.split()
+	if transaction[0] == 'printBlockchain':
+		sendCustom(NWSock,'print_blockchain')
+		clientState['receivedBloc'] = False
+	else:
+		if transaction[0] == 'printBalance':
+			sendCustom(NWSock,'print_balance')
+			clientState['receivedBal'] = False
+		else:
+			if transaction[0] == 'printSet':
+				sendCustom(NWSock,'print_set')
+				clientState['receivedSet'] = False
+			else:
+				if len(transaction) == 3:
+					(sender, receiver, value) = transaction
+					transaction = (sender, receiver, value)
+					sendTransaction(transaction,NWSock)
+
 NWSock = connectToNetwork(-1)
-#_thread.start_new_thread(listen, (client, ))
+NWSock.setblocking(0)
+clientState ={}
+clientState['receivedBal'] = False
+clientState['receivedBloc'] = False
 
-# _thread.start_new_thread(listen, (alice, ))
-# _thread.start_new_thread(listen, (bob, ))
-# _thread.start_new_thread(listen, (carol, ))
-# _thread.start_new_thread(listen, (devon, ))
-# _thread.start_new_thread(listen, (elizabeth, ))
 
-while(1):
-	transaction = input("Enter Transaction: ")
-	try:
-		(sender, receiver, value) = transaction.split()
-		transaction = (sender, receiver, value)
-	except ValueError:
-		print("invalid input format. must be Sender Receiver Money")
-	if sender and receiver and value:
-		sendTransaction(transaction,NWSock)
-		print("client sent transaction")
+_thread.start_new_thread(checkForMessages,(NWSock,clientState ))
+
+while(True):
+	print('Please input a command:')
+	print('printBlockchain')
+	print('printBalance')
+	print('printSet')
+	print('moneyTransfer: must be in form: A B 20 , A-E only')
+	inputVal = input('')
+	interpretInput(inputVal,NWSock)
+
+
