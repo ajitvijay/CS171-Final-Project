@@ -23,7 +23,7 @@ def connectToNetwork(proc_num):
 def turnLetterIntoNum(letter):
 	if letter.upper() == 'A':
 		return 0
-	else: 
+	else:
 		if letter.upper() == 'B':
 			return 1
 		else:
@@ -117,7 +117,6 @@ def receiveMessage(messageDict,clientState):
 				print('Set of transactions recorded at: ' + str(messageDict['sender']))
 				for trans in messageDict['transactions']:
 					print(str(trans))
-<<<<<<< HEAD
 			else:
 				if messageDict['type'] == 'failure':
 					print('Transaction ' + str(messageDict['data']) + ' failed. ')
@@ -126,16 +125,6 @@ def receiveMessage(messageDict,clientState):
 
 def interpretInput(input,NWSock):
 
-=======
-			else: 
-				if messageDict['type'] == 'failure':
-					print('Transaction ' + str(messageDict['data']) + ' failed. ')
-
-		
-
-def interpretInput(input,NWSock):
-	
->>>>>>> d20fc8ce8a69891d3f564580425491861921d0d3
 	transaction = input.split()
 	if transaction[0] == 'printBlockchain':
 		sendCustom(NWSock,'print_blockchain')
@@ -159,7 +148,6 @@ NWSock.setblocking(0)
 clientState ={}
 clientState['receivedBal'] = False
 clientState['receivedBloc'] = False
-<<<<<<< HEAD
 
 
 _thread.start_new_thread(checkForMessages,(NWSock,clientState ))
@@ -172,19 +160,3 @@ while(True):
 	print('moneyTransfer: must be in form: A B 20 , A-E only')
 	inputVal = input('')
 	interpretInput(inputVal,NWSock)
-=======
-
-
-_thread.start_new_thread(checkForMessages,(NWSock,clientState ))
-
-while(True):
-	print('Please input a command:')
-	print('printBlockchain')
-	print('printBalance')
-	print('printSet')
-	print('moneyTransfer: must be in form: A B 20 , A-E only')
-	inputVal = input('')
-	interpretInput(inputVal,NWSock)
-
-
->>>>>>> d20fc8ce8a69891d3f564580425491861921d0d3
