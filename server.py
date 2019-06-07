@@ -223,7 +223,7 @@ def sendTransSet(currentState,NWSock):
 	newMessage = {}
 	newMessage['type'] = 'trans-set'
 	newMessage['sender'] = currentState['proc_num']
-	newMessage['destination'] = '-1'
+	newMessage['destination'] = -1
 	newMessage['transactions'] = currentState['transactions']
 	NWSock.send(bytes(str(newMessage) + '%', encoding='utf8'))
 
