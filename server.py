@@ -385,14 +385,14 @@ def checkIfTransactionsAreValid(currentState,NWSock):
 	trans = currentState['transactions'][:2]
 	bal= calculateBalances(currentState)
 	transCorrect = [True,True]
-	for transact in trans:
-		sender = transact[0]
-		rec = transact[1]
-		amt = transact[2]
+	for transact in [0,1]:
+		sender = trans[0][0]
+		rec = trans[0][1]
+		amt = trans[0][2]
 		# print(type(sender), type(rec), type(amt)) #type string
 		# print(type(bal[sender])) #type int
 		if bal[sender] - int(amt) < 0:
-			transCorrect[trans] = False
+			transCorrect[transact] = False
 		else:
 			bal[sender] = bal[sender] - int(amt)
 	return transCorrect
@@ -414,18 +414,6 @@ def createBlock(currentState):
 		prevBlockStr = str(currentState['blockChain'] [-1])
 		prevBlockStr=  hashlib.sha256(prevBlockStr.encode()).hexdigest()
 
-<<<<<<< HEAD
-	else:
-		prev_transaction_1 = str(blockChain[len(blockChain)-1][1][0]) + " " + str(blockChain[len(blockChain)-1][1][1]) + " " + str(blockChain[len(blockChain)-1][1][0][2])
-		prev_transaction_2 = str(blockChain[len(blockChain)-1][1][0]) + " " + str(blockChain[len(blockChain)-1][1][1]) + " " + str(blockChain[len(blockChain)-1][1][1][2])
-		prev_depth = blockChain[len(blockChain)-1][0][0]
-		hash_prev = blockChain[len(blockChain)-1][0][1]
-		prev_nonce = blockChain[len(blockChain)-1][0][2]
-		string_hash =  prev_transaction_1 + prev_transaction_2 + str(prev_depth) + hash_prev + prev_nonce
-		prev_hash = hashlib.sha256(string_hash.encode()).hexdigest()
-
-	head_of_block = (depth_newblock, prev_hash, nonce)
-=======
 		# prev_transaction_1 = str(blockChain[len(blockChain)-1][1][0][0]) + " " + str(blockChain[len(blockChain)-1][1][0][1]]) + " " + str(blockChain[len(blockChain)-1][1][0][2])
 		# prev_transaction_2 = str(blockChain[len(blockChain)-1][1][1][0]) + " " + str(blockChain[len(blockChain)-1][1][1][1])) + " " + str(blockChain[len(blockChain)-1][1][1][2])
 		# prev_depth = blockChain[len(blockChain)-1][0][0]
@@ -436,7 +424,6 @@ def createBlock(currentState):
 
 
 	head_of_block = (depth_newblock,prevBlockStr, nonce)
->>>>>>> 9d4f2aa2af4819a787ebac11e3fa5c92614b7a0f
 	transactions_in_block = []
 	transactions_in_block.append(transactions[0])
 	transactions_in_block.append(transactions[1])
@@ -515,7 +502,7 @@ def run(proc_num):
 				pass
 			else:
 				if isValidBlock(block):
-					print("Found a valid block for transactions: " + str(currentState['transactions'][0]) +' ' + str(currentState['transactions'][0]) ) 
+					print("Found a valid block for transactions: " + str(currentState['transactions'][0]) +' ' + str(currentState['transactions'][0]) )
 					sendPropMessages(currentState,NWSock,block)
 					lastValidBlock = block
 		# receive message and then process if received
