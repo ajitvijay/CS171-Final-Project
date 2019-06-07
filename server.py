@@ -113,6 +113,7 @@ def sendAccAck(message,NWSock):
 	newMessage = {}
 	newMessage['type'] = 'acc_ack'
 	newMessage['bal'] = message['bal']
+	print('Sent acc ack message with ballowNum: ' + str(newMessage['bal']))
 	newMessage['value'] = message['value']
 	newMessage['destination'] = message['sender']
 	newMessage['sender'] = message['destination']
@@ -155,6 +156,7 @@ def sendDecisionMessages(currentState,NWSock):
 
 def sendAccMessages(currentState,NWSock):
 	value = None
+
 	b = (len(currentState['blockChain']) + 1,-999,-999)
 	for message in currentState['messagesReceived']:
 		if message['acceptVal'] != 'N/A':
@@ -167,6 +169,7 @@ def sendAccMessages(currentState,NWSock):
 	newMessage = {}
 	newMessage ['type'] = 'acc'
 	newMessage ['bal'] = currentState['messagesReceived'][0]['bal']
+	print("sending acc messages with ballot number: " + str(newMessage['bal']))
 	# print('bal remains: ' + str(newMessage['bal']))	
 	# print('')
 
@@ -278,7 +281,7 @@ def receiveDecision(currentState,message,NWSock):
 			#if decided value is from this proc_num
 			print('Received validated block decision: ' + str(message['value']))
 			print('')
-			print('SAVE STATE OUTPUT BELOW:')
+			# print('SAVE STATE OUTPUT BELOW:')
 			# because we added a new block, we have to reset paxos states
 			currentState['state'] = 'N/A'
 			currentState['value'] = 'N/A'
@@ -531,7 +534,7 @@ def blockEquals(block1,block2):
 def run(proc_num):
 
 	currentState = initiateCurrentState(proc_num)
-	print(currentState)
+	# print(currentState)
 	lastValidBlock = ''
 
 	NWSock = connectToNetwork(currentState['proc_num'])
