@@ -3,7 +3,7 @@ import time
 import string
 import threading
 import _thread
-from socket import *
+from socket import *	
 import ast
 import sys
 import hashlib
@@ -88,8 +88,8 @@ def saveState(currentState):
 	saveState['transactions'] = []
 	saveState['inSync'] = True
 
-	print(str(saveState))
-	print(str(currentState))
+	# print(str(saveState))
+	# print(str(currentState))
 	pickle.dump(saveState,open( 'save' + str(currentState['proc_num']) + '.txt', "wb" ))
 
 def readState(currentState):
